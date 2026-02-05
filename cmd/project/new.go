@@ -72,11 +72,18 @@ func runNewInteractive() error {
 	cwd, _ := filepath.Abs(".")
 	repoPath := cwd
 
+	km := huh.NewDefaultKeyMap()
+	km.FilePicker.Up.SetEnabled(true)
+	km.FilePicker.Down.SetEnabled(true)
+	km.FilePicker.Close.SetEnabled(true)
+	km.FilePicker.Open.SetEnabled(true)
+	km.FilePicker.Back.SetEnabled(true)
+
 	err := huh.NewForm(
 		huh.NewGroup(
 			huh.NewFilePicker().
 				Title("Repository path").
-				Description("h/backspace: go up a directory, l/enter: open, .: toggle hidden").
+				Description("Select a git repository directory").
 				DirAllowed(true).
 				FileAllowed(false).
 				ShowHidden(true).
@@ -90,7 +97,7 @@ func runNewInteractive() error {
 				Description("Leave blank to use the repo directory name").
 				Value(&name),
 		),
-	).Run()
+	).WithKeyMap(km).Run()
 	if err != nil {
 		return err
 	}
