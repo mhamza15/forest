@@ -213,6 +213,8 @@ func (m Model) View() string {
 
 	var b strings.Builder
 
+	b.WriteString(styleHeader.Render("Projects") + "\n")
+
 	row := 0
 
 	for _, p := range m.projects {
