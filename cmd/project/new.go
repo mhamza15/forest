@@ -88,7 +88,7 @@ func runNewInteractive() error {
 				Description("Select a git repository directory").
 				DirAllowed(true).
 				FileAllowed(false).
-				ShowHidden(true).
+				ShowHidden(false).
 				ShowPermissions(false).
 				Height(15).
 				CurrentDirectory(cwd).
