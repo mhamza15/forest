@@ -12,6 +12,7 @@ import (
 
 	configcmd "github.com/mhamza15/forest/cmd/config"
 	projectcmd "github.com/mhamza15/forest/cmd/project"
+	treecmd "github.com/mhamza15/forest/cmd/tree"
 )
 
 var verbose bool
@@ -39,6 +40,7 @@ func init() {
 
 	rootCmd.AddCommand(configcmd.Command())
 	rootCmd.AddCommand(projectcmd.Command())
+	rootCmd.AddCommand(treecmd.Command())
 }
 
 // Execute runs the root command. It is the single entry point called from main.
