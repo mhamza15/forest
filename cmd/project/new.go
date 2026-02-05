@@ -67,10 +67,10 @@ func registerProject(repoPath string, name string) error {
 // runNewInteractive prompts the user for repo path and project name
 // using a huh form with a file picker for directory selection.
 func runNewInteractive() error {
-	var repoPath string
 	var name string
 
-	home, _ := filepath.Abs(".")
+	cwd, _ := filepath.Abs(".")
+	repoPath := cwd
 
 	err := huh.NewForm(
 		huh.NewGroup(
@@ -80,7 +80,8 @@ func runNewInteractive() error {
 				DirAllowed(true).
 				FileAllowed(false).
 				ShowHidden(true).
-				CurrentDirectory(home).
+				CurrentDirectory(cwd).
+				Picking(true).
 				Value(&repoPath),
 
 			huh.NewInput().
