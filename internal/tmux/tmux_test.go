@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSessionName(t *testing.T) {
@@ -46,7 +47,7 @@ func TestIsRunning(t *testing.T) {
 
 func TestRequireRunning(t *testing.T) {
 	t.Setenv("TMUX", "")
-	assert.ErrorIs(t, RequireRunning(), ErrNotRunning)
+	require.ErrorIs(t, RequireRunning(), ErrNotRunning)
 
 	t.Setenv("TMUX", "/tmp/tmux-1000/default,12345,0")
 	assert.NoError(t, RequireRunning())

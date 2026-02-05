@@ -90,7 +90,6 @@ func runNewInteractive() error {
 				Value(&name),
 		),
 	).Run()
-
 	if err != nil {
 		return err
 	}
