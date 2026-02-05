@@ -2,6 +2,7 @@ package project
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -75,25 +76,31 @@ func runNewInteractive() error {
 
 	km := huh.NewDefaultKeyMap()
 	km.Quit = key.NewBinding(key.WithKeys("q", "ctrl+c"), key.WithHelp("q", "quit"))
-	km.FilePicker.Up.SetEnabled(true)
-	km.FilePicker.Down.SetEnabled(true)
-	km.FilePicker.Close.SetEnabled(true)
-	km.FilePicker.Open.SetEnabled(true)
-	km.FilePicker.Back.SetEnabled(true)
 
 	err := huh.NewForm(
 		huh.NewGroup(
-			huh.NewFilePicker().
+			huh.NewInput().
 				Title("Repository path").
-				Description("Select a git repository directory").
-				DirAllowed(true).
-				FileAllowed(false).
-				ShowHidden(true).
-				ShowPermissions(false).
-				Height(15).
-				CurrentDirectory(cwd).
-				Picking(true).
-				Value(&repoPath),
+				Description("Absolute or relative path to a git repository").
+				Placeholder(cwd).
+				Value(&repoPath).
+				Validate(func(s string) error {
+					p := s
+					if p == "" {
+						p = cwd
+					}
+
+					info, err := os.Stat(p)
+					if err != nil {
+						return fmt.Errorf("path does not exist: %s", p)
+					}
+
+					if !info.IsDir() {
+						return fmt.Errorf("not a directory: %s", p)
+					}
+
+					return nil
+				}),
 
 			huh.NewInput().
 				Title("Project name").
@@ -103,6 +110,10 @@ func runNewInteractive() error {
 	).WithKeyMap(km).Run()
 	if err != nil {
 		return err
+	}
+
+	if repoPath == "" {
+		repoPath = cwd
 	}
 
 	return registerProject(repoPath, name)
