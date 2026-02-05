@@ -73,6 +73,8 @@ func runNewInteractive() error {
 	cwd, _ := filepath.Abs(".")
 	repoPath := cwd
 
+	fmt.Println()
+
 	km := huh.NewDefaultKeyMap()
 	km.Quit = key.NewBinding(key.WithKeys("q", "ctrl+c"), key.WithHelp("q", "quit"))
 	km.FilePicker.Up.SetEnabled(true)
