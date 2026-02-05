@@ -17,10 +17,6 @@ var (
 	styleDim = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("8"))
 
-	styleHelp = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("8")).
-			MarginTop(1)
-
 	styleError = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("9"))
 )

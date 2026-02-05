@@ -16,6 +16,20 @@ type keyMap struct {
 	Quit    key.Binding
 }
 
+// ShortHelp returns the keybindings shown in the compact help view.
+func (k keyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Up, k.Down, k.Open, k.Toggle, k.Delete, k.New, k.Quit}
+}
+
+// FullHelp returns keybindings for the expanded help view.
+func (k keyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Up, k.Down, k.Open, k.Toggle},
+		{k.Delete, k.New, k.Confirm, k.Cancel},
+		{k.Quit},
+	}
+}
+
 func defaultKeyMap() keyMap {
 	return keyMap{
 		Up: key.NewBinding(

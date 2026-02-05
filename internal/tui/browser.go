@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -38,6 +39,7 @@ type Model struct {
 	cursor   int
 	mode     mode
 	keys     keyMap
+	help     help.Model
 
 	// For the "new tree" flow: which project was selected.
 	newProject string
@@ -91,6 +93,7 @@ func NewModel() (Model, error) {
 	return Model{
 		projects: projects,
 		keys:     defaultKeyMap(),
+		help:     help.New(),
 		input:    ti,
 	}, nil
 }
@@ -225,7 +228,7 @@ func (m Model) View() string {
 	}
 
 	if m.mode == modeBrowse {
-		b.WriteString(styleHelp.Render("j/k:move  enter:open  tab:expand  d:delete  n:new  q:quit") + "\n")
+		b.WriteString("\n" + m.help.View(m.keys) + "\n")
 	}
 
 	return b.String()
