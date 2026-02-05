@@ -7,8 +7,10 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 
 	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/git"
@@ -21,6 +23,7 @@ type mode int
 const (
 	modeBrowse mode = iota
 	modeConfirmDelete
+	modeDeleting
 	modeNewSelectProject
 	modeNewInputBranch
 )
@@ -33,6 +36,15 @@ type projectNode struct {
 	expanded bool
 }
 
+// deleteResultMsg carries the outcome of an async delete operation.
+type deleteResultMsg struct {
+	projectIdx int
+	treeIdx    int
+	project    string
+	branch     string
+	err        error
+}
+
 // Model is the bubbletea model for the inline tree browser.
 type Model struct {
 	projects []projectNode
@@ -40,6 +52,7 @@ type Model struct {
 	mode     mode
 	keys     keyMap
 	help     help.Model
+	spinner  spinner.Model
 
 	// For the "new tree" flow: which project was selected.
 	newProject string
@@ -90,10 +103,16 @@ func NewModel() (Model, error) {
 	ti.CharLimit = 128
 	ti.Width = 40
 
+	s := spinner.New(
+		spinner.WithSpinner(spinner.Dot),
+		spinner.WithStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("11"))),
+	)
+
 	return Model{
 		projects: projects,
 		keys:     defaultKeyMap(),
 		help:     help.New(),
+		spinner:  s,
 		input:    ti,
 	}, nil
 }
@@ -109,6 +128,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.help.Width = msg.Width
 		return m, nil
+
+	case deleteResultMsg:
+		return m.handleDeleteResult(msg)
+
+	case spinner.TickMsg:
+		if m.mode == modeDeleting {
+			var cmd tea.Cmd
+			m.spinner, cmd = m.spinner.Update(msg)
+			return m, cmd
+		}
 
 	case tea.KeyMsg:
 		return m.handleKey(msg)
@@ -218,6 +247,9 @@ func (m Model) View() string {
 	switch m.mode {
 	case modeConfirmDelete:
 		b.WriteString("\n" + styleError.Render("Delete this tree? (y/N)") + "\n")
+
+	case modeDeleting:
+		b.WriteString("\n" + m.spinner.View() + " Deleting...\n")
 
 	case modeNewSelectProject:
 		b.WriteString("\n" + styleDim.Render("Select a project for the new tree, then press enter") + "\n")
@@ -368,39 +400,59 @@ func (m Model) handleConfirmDelete(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 }
 
+// executeDelete starts the async delete operation and shows a spinner.
 func (m Model) executeDelete() (tea.Model, tea.Cmd) {
 	pi, ti := m.cursorTarget()
 	p := m.projects[pi]
 	branch := p.trees[ti].Branch
 
-	rc, err := config.Resolve(p.name)
-	if err != nil {
-		m.err = err
-		m.mode = modeBrowse
+	m.mode = modeDeleting
+	m.status = ""
+	m.err = nil
+
+	deleteCmd := func() tea.Msg {
+		rc, err := config.Resolve(p.name)
+		if err != nil {
+			return deleteResultMsg{
+				projectIdx: pi, treeIdx: ti,
+				project: p.name, branch: branch, err: err,
+			}
+		}
+
+		sessionName := tmux.SessionName(p.name, branch)
+		wtPath := filepath.Join(rc.WorktreeDir, rc.Name, branch)
+
+		_ = tmux.KillSession(sessionName)
+
+		return deleteResultMsg{
+			projectIdx: pi, treeIdx: ti,
+			project: p.name, branch: branch,
+			err: git.Remove(rc.Repo, wtPath),
+		}
+	}
+
+	return m, tea.Batch(m.spinner.Tick, deleteCmd)
+}
+
+// handleDeleteResult processes the outcome of an async delete.
+func (m Model) handleDeleteResult(msg deleteResultMsg) (tea.Model, tea.Cmd) {
+	m.mode = modeBrowse
+
+	if msg.err != nil {
+		m.err = msg.err
 		return m, nil
 	}
 
-	sessionName := tmux.SessionName(p.name, branch)
-	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, branch)
+	pi := msg.projectIdx
+	ti := msg.treeIdx
 
-	_ = tmux.KillSession(sessionName)
-
-	if err := git.Remove(rc.Repo, wtPath); err != nil {
-		m.err = err
-		m.mode = modeBrowse
-		return m, nil
-	}
-
-	// Remove the tree from our in-memory list.
 	m.projects[pi].trees = append(
 		m.projects[pi].trees[:ti],
 		m.projects[pi].trees[ti+1:]...,
 	)
 
-	m.status = fmt.Sprintf("deleted %s/%s", p.name, branch)
-	m.mode = modeBrowse
+	m.status = fmt.Sprintf("deleted %s/%s", msg.project, msg.branch)
 
-	// Adjust cursor if it went out of bounds.
 	total := m.visibleRows()
 	if m.cursor >= total && total > 0 {
 		m.cursor = total - 1
