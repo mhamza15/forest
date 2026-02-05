@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	configcmd "github.com/mhamza15/forest/cmd/config"
+	projectcmd "github.com/mhamza15/forest/cmd/project"
 )
 
 var verbose bool
@@ -33,6 +34,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable debug logging")
 
 	rootCmd.AddCommand(configcmd.Command())
+	rootCmd.AddCommand(projectcmd.Command())
 }
 
 // Execute runs the root command. It is the single entry point called from main.
