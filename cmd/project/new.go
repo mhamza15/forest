@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/config"
@@ -65,9 +66,36 @@ func registerProject(repoPath string, name string) error {
 }
 
 // runNewInteractive prompts the user for repo path and project name
-// using a TUI form. Implemented in new_interactive.go.
+// using a huh form with a file picker for directory selection.
 func runNewInteractive() error {
-	return fmt.Errorf("interactive mode not yet implemented; provide a repo path as an argument")
+	var repoPath string
+	var name string
+
+	home, _ := filepath.Abs(".")
+
+	err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewFilePicker().
+				Title("Repository path").
+				Description("Select a git repository directory").
+				DirAllowed(true).
+				FileAllowed(false).
+				ShowHidden(true).
+				CurrentDirectory(home).
+				Value(&repoPath),
+
+			huh.NewInput().
+				Title("Project name").
+				Description("Leave blank to use the repo directory name").
+				Value(&name),
+		),
+	).Run()
+
+	if err != nil {
+		return err
+	}
+
+	return registerProject(repoPath, name)
 }
 
 func validateGitRepo(path string) error {
