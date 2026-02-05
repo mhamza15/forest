@@ -90,7 +90,7 @@ func runNewInteractive() error {
 				FileAllowed(false).
 				ShowHidden(false).
 				ShowPermissions(false).
-				Height(15).
+				Height(5).
 				CurrentDirectory(cwd).
 				Picking(true).
 				Value(&repoPath),
