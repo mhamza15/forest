@@ -89,6 +89,7 @@ func runNewInteractive() error {
 				DirAllowed(true).
 				FileAllowed(false).
 				ShowHidden(true).
+				ShowPermissions(false).
 				Height(15).
 				CurrentDirectory(cwd).
 				Picking(true).
