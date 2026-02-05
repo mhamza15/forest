@@ -13,12 +13,13 @@ type keyMap struct {
 	New     key.Binding
 	Confirm key.Binding
 	Cancel  key.Binding
+	Help    key.Binding
 	Quit    key.Binding
 }
 
 // ShortHelp returns the keybindings shown in the compact help view.
 func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Up, k.Down, k.Open, k.Toggle, k.Delete, k.New, k.Quit}
+	return []key.Binding{k.Up, k.Down, k.Open, k.Toggle, k.Help, k.Quit}
 }
 
 // FullHelp returns keybindings for the expanded help view.
@@ -26,7 +27,7 @@ func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Open, k.Toggle},
 		{k.Delete, k.New, k.Confirm, k.Cancel},
-		{k.Quit},
+		{k.Help, k.Quit},
 	}
 }
 
@@ -70,6 +71,11 @@ func defaultKeyMap() keyMap {
 		Cancel: key.NewBinding(
 			key.WithKeys("N", "esc"),
 			key.WithHelp("N/esc", "cancel"),
+		),
+
+		Help: key.NewBinding(
+			key.WithKeys("?"),
+			key.WithHelp("?", "toggle help"),
 		),
 
 		Quit: key.NewBinding(
