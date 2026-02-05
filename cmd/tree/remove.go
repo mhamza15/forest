@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/mhamza15/forest/internal/completion"
 	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/git"
 	"github.com/mhamza15/forest/internal/tmux"
@@ -14,10 +15,11 @@ import (
 
 func removeCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "remove <project> <branch>",
-		Short: "Remove a worktree and its tmux session",
-		Args:  cobra.ExactArgs(2),
-		RunE:  runRemove,
+		Use:               "remove <project> <branch>",
+		Short:             "Remove a worktree and its tmux session",
+		Args:              cobra.ExactArgs(2),
+		RunE:              runRemove,
+		ValidArgsFunction: completion.ProjectThenBranch,
 	}
 }
 

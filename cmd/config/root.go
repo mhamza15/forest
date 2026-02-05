@@ -7,19 +7,22 @@ import (
 	"os"
 	"os/exec"
 
-	iconfig "github.com/mhamza15/forest/internal/config"
 	"github.com/spf13/cobra"
+
+	"github.com/mhamza15/forest/internal/completion"
+	iconfig "github.com/mhamza15/forest/internal/config"
 )
 
 // Command returns the config cobra command, ready to be added as a
 // subcommand of root.
 func Command() *cobra.Command {
 	return &cobra.Command{
-		Use:   "config [project]",
-		Short: "Open configuration in your editor",
-		Long:  "Opens the global config in $EDITOR. If a project name is given, opens that project's config instead.",
-		Args:  cobra.MaximumNArgs(1),
-		RunE:  run,
+		Use:               "config [project]",
+		Short:             "Open configuration in your editor",
+		Long:              "Opens the global config in $EDITOR. If a project name is given, opens that project's config instead.",
+		Args:              cobra.MaximumNArgs(1),
+		RunE:              run,
+		ValidArgsFunction: completion.Projects,
 	}
 }
 

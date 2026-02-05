@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/mhamza15/forest/internal/completion"
 	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/git"
 	"github.com/mhamza15/forest/internal/tmux"
@@ -22,8 +23,9 @@ func newCmd() *cobra.Command {
 If the worktree already exists, the command switches to the existing
 tmux session instead. The new branch is based on the project's configured
 base branch, falling back to the global default.`,
-		Args: cobra.ExactArgs(2),
-		RunE: runNew,
+		Args:              cobra.ExactArgs(2),
+		RunE:              runNew,
+		ValidArgsFunction: completion.ProjectThenBranch,
 	}
 }
 

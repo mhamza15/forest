@@ -5,16 +5,18 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/mhamza15/forest/internal/completion"
 	"github.com/mhamza15/forest/internal/config"
 )
 
 func removeCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "remove <project>",
-		Short: "Unregister a project",
-		Long:  "Remove a project's configuration file. This does not delete the repository or any worktrees.",
-		Args:  cobra.ExactArgs(1),
-		RunE:  runRemove,
+		Use:               "remove <project>",
+		Short:             "Unregister a project",
+		Long:              "Remove a project's configuration file. This does not delete the repository or any worktrees.",
+		Args:              cobra.ExactArgs(1),
+		RunE:              runRemove,
+		ValidArgsFunction: completion.Projects,
 	}
 }
 
