@@ -2,7 +2,6 @@ package project
 
 import (
 	"fmt"
-	"log/slog"
 	"os/exec"
 	"path/filepath"
 
@@ -60,7 +59,7 @@ func registerProject(repoPath string, name string) error {
 		return err
 	}
 
-	slog.Info("project registered", "name", name, "repo", absPath)
+	fmt.Printf("Registered project %q (%s)\n", name, absPath)
 
 	return nil
 }

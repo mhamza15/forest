@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -46,13 +47,15 @@ func init() {
 // Execute runs the root command. It is the single entry point called from main.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		slog.Error("command failed", "err", err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
 }
 
 func initLogging() {
-	level := slog.LevelInfo
+	// Suppress all slog output by default. The --verbose flag drops
+	// the level to Debug so that slog.Debug calls become visible.
+	level := slog.LevelError + 1
 	if verbose {
 		level = slog.LevelDebug
 	}

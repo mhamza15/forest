@@ -1,7 +1,7 @@
 package project
 
 import (
-	"log/slog"
+	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -30,7 +30,7 @@ func runRemove(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	slog.Info("project removed", "name", name)
+	fmt.Printf("Removed project %q\n", name)
 
 	return nil
 }

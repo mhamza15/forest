@@ -46,7 +46,7 @@ func runNew(cmd *cobra.Command, args []string) error {
 	// If the worktree directory already exists, skip creation and just
 	// ensure the tmux session is running.
 	if _, err := os.Stat(wtPath); err != nil {
-		slog.Info("creating worktree", "path", wtPath, "base", rc.Branch)
+		slog.Debug("creating worktree", "path", wtPath, "base", rc.Branch)
 
 		if err := os.MkdirAll(filepath.Dir(wtPath), 0o755); err != nil {
 			return fmt.Errorf("creating worktree parent dir: %w", err)
@@ -55,8 +55,10 @@ func runNew(cmd *cobra.Command, args []string) error {
 		if err := git.Add(rc.Repo, wtPath, branch, rc.Branch); err != nil {
 			return err
 		}
+
+		fmt.Printf("Created worktree %s/%s\n", project, branch)
 	} else {
-		slog.Info("worktree already exists, switching to session", "path", wtPath)
+		fmt.Printf("Worktree %s/%s already exists\n", project, branch)
 	}
 
 	if !tmux.SessionExists(sessionName) {
@@ -65,7 +67,7 @@ func runNew(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	slog.Info("switching to session", "session", sessionName)
+	slog.Debug("switching to tmux session", "session", sessionName)
 
 	return tmux.SwitchTo(sessionName)
 }

@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"fmt"
 	"log/slog"
 	"path/filepath"
 
@@ -33,14 +34,14 @@ func runRemove(cmd *cobra.Command, args []string) error {
 	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, branch)
 
 	if err := tmux.KillSession(sessionName); err != nil {
-		slog.Warn("could not kill tmux session", "session", sessionName, "err", err)
+		slog.Debug("could not kill tmux session", "session", sessionName, "err", err)
 	}
 
 	if err := git.Remove(rc.Repo, wtPath); err != nil {
 		return err
 	}
 
-	slog.Info("worktree removed", "project", project, "branch", branch)
+	fmt.Printf("Removed worktree %s/%s\n", project, branch)
 
 	return nil
 }
