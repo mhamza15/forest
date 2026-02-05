@@ -20,7 +20,11 @@ var verbose bool
 var rootCmd = &cobra.Command{
 	Use:   "forest",
 	Short: "Manage git worktrees with tmux sessions",
-	Long:  "Forest organizes git worktrees into per-project directories and pairs each with a tmux session.",
+	Long: `Forest is a CLI tool for managing git worktrees and tmux sessions.
+
+It simplifies the workflow of creating and managing multiple working
+copies of a repository, each in its own directory with a dedicated
+tmux session.`,
 
 	SilenceUsage:  true,
 	SilenceErrors: true,
