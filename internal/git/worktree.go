@@ -5,10 +5,15 @@ package git
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
 )
+
+// ErrWorktreeDirty is returned when a worktree has modified or untracked
+// files and cannot be removed without --force.
+var ErrWorktreeDirty = errors.New("worktree contains modified or untracked files")
 
 // Worktree represents a single git worktree entry as reported by
 // git worktree list --porcelain.
@@ -39,19 +44,38 @@ func Add(repoPath, worktreePath, newBranch, baseBranch string) error {
 	return nil
 }
 
-// Remove removes the worktree at the given path. repoPath is the path
-// to the main repository.
+// Remove removes the worktree at the given path. If the worktree has
+// modified or untracked files, it returns ErrWorktreeDirty. Use
+// ForceRemove to remove it anyway.
 func Remove(repoPath, worktreePath string) error {
+	return removeWorktree(repoPath, worktreePath, false)
+}
+
+// ForceRemove removes the worktree at the given path even if it
+// contains modified or untracked files.
+func ForceRemove(repoPath, worktreePath string) error {
+	return removeWorktree(repoPath, worktreePath, true)
+}
+
+func removeWorktree(repoPath, worktreePath string, force bool) error {
+	args := []string{"-C", repoPath, "worktree", "remove"}
+	if force {
+		args = append(args, "--force")
+	}
+	args = append(args, worktreePath)
+
 	//nolint:gosec // Arguments are derived from validated config, not user input.
-	cmd := exec.Command(
-		"git", "-C", repoPath,
-		"worktree", "remove",
-		worktreePath,
-	)
+	cmd := exec.Command("git", args...)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("git worktree remove: %s: %w", bytes.TrimSpace(output), err)
+		msg := string(bytes.TrimSpace(output))
+
+		if strings.Contains(msg, "modified or untracked") {
+			return fmt.Errorf("%w: %s", ErrWorktreeDirty, worktreePath)
+		}
+
+		return fmt.Errorf("git worktree remove: %s: %w", msg, err)
 	}
 
 	return nil

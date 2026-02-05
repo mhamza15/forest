@@ -1,10 +1,12 @@
 package tree
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"path/filepath"
 
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/completion"
@@ -40,7 +42,30 @@ func runRemove(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := git.Remove(rc.Repo, wtPath); err != nil {
-		return err
+		if !errors.Is(err, git.ErrWorktreeDirty) {
+			return err
+		}
+
+		fmt.Printf("Worktree %s/%s has modified or untracked files.\n", project, branch)
+
+		var force bool
+
+		confirmErr := huh.NewConfirm().
+			Title("Force remove?").
+			Value(&force).
+			Run()
+
+		if confirmErr != nil {
+			return confirmErr
+		}
+
+		if !force {
+			return nil
+		}
+
+		if err := git.ForceRemove(rc.Repo, wtPath); err != nil {
+			return err
+		}
 	}
 
 	fmt.Printf("Removed worktree %s/%s\n", project, branch)

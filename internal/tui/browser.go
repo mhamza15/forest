@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -24,6 +25,7 @@ const (
 	modeBrowse mode = iota
 	modeConfirmDelete
 	modeDeleting
+	modeConfirmForce
 	modeNewSelectProject
 	modeNewInputBranch
 )
@@ -164,6 +166,11 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.handleConfirmDelete(msg)
 	}
 
+	// In force-delete confirmation mode.
+	if m.mode == modeConfirmForce {
+		return m.handleConfirmForce(msg)
+	}
+
 	// In new-tree project selection mode.
 	if m.mode == modeNewSelectProject {
 		return m.handleNewSelectProject(msg)
@@ -247,6 +254,9 @@ func (m Model) View() string {
 	switch m.mode {
 	case modeConfirmDelete:
 		b.WriteString("\n" + styleError.Render("Delete this tree? (y/N)") + "\n")
+
+	case modeConfirmForce:
+		b.WriteString("\n" + styleError.Render("Worktree has modified or untracked files. Force remove? (y/N)") + "\n")
 
 	case modeDeleting:
 		b.WriteString("\n" + m.spinner.View() + " Deleting...\n")
@@ -400,6 +410,49 @@ func (m Model) handleConfirmDelete(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 }
 
+func (m Model) handleConfirmForce(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch {
+	case key.Matches(msg, m.keys.Confirm):
+		return m.executeForceDelete()
+
+	default:
+		m.mode = modeBrowse
+		m.status = "delete cancelled"
+		return m, nil
+	}
+}
+
+// executeForceDelete re-runs the delete with --force.
+func (m Model) executeForceDelete() (tea.Model, tea.Cmd) {
+	pi, ti := m.cursorTarget()
+	p := m.projects[pi]
+	branch := p.trees[ti].Branch
+
+	m.mode = modeDeleting
+	m.status = ""
+	m.err = nil
+
+	forceCmd := func() tea.Msg {
+		rc, err := config.Resolve(p.name)
+		if err != nil {
+			return deleteResultMsg{
+				projectIdx: pi, treeIdx: ti,
+				project: p.name, branch: branch, err: err,
+			}
+		}
+
+		wtPath := filepath.Join(rc.WorktreeDir, rc.Name, branch)
+
+		return deleteResultMsg{
+			projectIdx: pi, treeIdx: ti,
+			project: p.name, branch: branch,
+			err: git.ForceRemove(rc.Repo, wtPath),
+		}
+	}
+
+	return m, tea.Batch(m.spinner.Tick, forceCmd)
+}
+
 // executeDelete starts the async delete operation and shows a spinner.
 func (m Model) executeDelete() (tea.Model, tea.Cmd) {
 	pi, ti := m.cursorTarget()
@@ -436,12 +489,20 @@ func (m Model) executeDelete() (tea.Model, tea.Cmd) {
 
 // handleDeleteResult processes the outcome of an async delete.
 func (m Model) handleDeleteResult(msg deleteResultMsg) (tea.Model, tea.Cmd) {
-	m.mode = modeBrowse
-
 	if msg.err != nil {
+		if errors.Is(msg.err, git.ErrWorktreeDirty) {
+			m.mode = modeConfirmForce
+			m.err = nil
+			m.status = ""
+			return m, nil
+		}
+
+		m.mode = modeBrowse
 		m.err = msg.err
 		return m, nil
 	}
+
+	m.mode = modeBrowse
 
 	pi := msg.projectIdx
 	ti := msg.treeIdx
