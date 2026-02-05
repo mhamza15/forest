@@ -1,3 +1,7 @@
 package main
 
-func main() {}
+import "github.com/mhamza15/forest/cmd"
+
+func main() {
+	cmd.Execute()
+}
