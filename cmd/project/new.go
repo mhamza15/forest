@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
@@ -73,6 +74,7 @@ func runNewInteractive() error {
 	repoPath := cwd
 
 	km := huh.NewDefaultKeyMap()
+	km.Quit = key.NewBinding(key.WithKeys("q", "ctrl+c"), key.WithHelp("q", "quit"))
 	km.FilePicker.Up.SetEnabled(true)
 	km.FilePicker.Down.SetEnabled(true)
 	km.FilePicker.Close.SetEnabled(true)
