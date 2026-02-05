@@ -72,6 +72,30 @@ func TestResolve_ProjectOverrides(t *testing.T) {
 	assert.Equal(t, "develop", rc.Branch)
 }
 
+func TestRemoveProject(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", dir)
+
+	require.NoError(t, SaveProject("doomed", ProjectConfig{
+		Repo: "/repos/doomed",
+	}))
+
+	_, err := LoadProject("doomed")
+	require.NoError(t, err)
+
+	require.NoError(t, RemoveProject("doomed"))
+
+	_, err = LoadProject("doomed")
+	assert.Error(t, err)
+}
+
+func TestRemoveProject_NotFound(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+
+	// Removing a nonexistent project is not an error.
+	assert.NoError(t, RemoveProject("ghost"))
+}
+
 func TestListProjects_Empty(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 

@@ -64,6 +64,18 @@ func SaveProject(name string, cfg ProjectConfig) error {
 	return nil
 }
 
+// RemoveProject deletes the project config file. It is not an error
+// if the file does not exist.
+func RemoveProject(name string) error {
+	p := ProjectConfigPath(name)
+
+	if err := os.Remove(p); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("removing project config %q: %w", name, err)
+	}
+
+	return nil
+}
+
 // Resolve loads the global and project configs, then merges them.
 // Project-level fields take precedence when non-empty.
 func Resolve(name string) (ResolvedConfig, error) {
