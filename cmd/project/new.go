@@ -76,10 +76,11 @@ func runNewInteractive() error {
 		huh.NewGroup(
 			huh.NewFilePicker().
 				Title("Repository path").
-				Description("Select a git repository directory").
+				Description("h/backspace: go up a directory, l/enter: open, .: toggle hidden").
 				DirAllowed(true).
 				FileAllowed(false).
 				ShowHidden(true).
+				Height(15).
 				CurrentDirectory(cwd).
 				Picking(true).
 				Value(&repoPath),
