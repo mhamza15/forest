@@ -23,18 +23,20 @@ type Worktree struct {
 	Bare   bool
 }
 
-// Add creates a new worktree at worktreePath, branching off baseBranch
-// with the new branch name newBranch. repoPath is the path to the
-// main repository.
-func Add(repoPath, worktreePath, newBranch, baseBranch string) error {
+// Add creates a new worktree at worktreePath for the given branch. If
+// the branch already exists in the repo, it is checked out into the
+// worktree. Otherwise a new branch is created off baseBranch.
+func Add(repoPath, worktreePath, branch, baseBranch string) error {
+	var args []string
+
+	if BranchExists(repoPath, branch) {
+		args = []string{"-C", repoPath, "worktree", "add", worktreePath, branch}
+	} else {
+		args = []string{"-C", repoPath, "worktree", "add", "-b", branch, worktreePath, baseBranch}
+	}
+
 	//nolint:gosec // Arguments are derived from validated config, not user input.
-	cmd := exec.Command(
-		"git", "-C", repoPath,
-		"worktree", "add",
-		"-b", newBranch,
-		worktreePath,
-		baseBranch,
-	)
+	cmd := exec.Command("git", args...)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -42,6 +44,13 @@ func Add(repoPath, worktreePath, newBranch, baseBranch string) error {
 	}
 
 	return nil
+}
+
+// BranchExists returns true if a local branch with the given name
+// exists in the repository.
+func BranchExists(repoPath, branch string) bool {
+	cmd := exec.Command("git", "-C", repoPath, "rev-parse", "--verify", "refs/heads/"+branch)
+	return cmd.Run() == nil
 }
 
 // Remove removes the worktree at the given path. If the worktree has
