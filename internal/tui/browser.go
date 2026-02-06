@@ -142,6 +142,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.KeyMsg:
+		if m.mode == modeDeleting {
+			return m, nil
+		}
 		return m.handleKey(msg)
 	}
 
