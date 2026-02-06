@@ -13,7 +13,7 @@ func Command() *cobra.Command {
 		RunE:  runBrowser,
 	}
 
-	cmd.AddCommand(newCmd())
+	cmd.AddCommand(addCmd())
 	cmd.AddCommand(removeCmd())
 
 	return cmd

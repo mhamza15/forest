@@ -11,7 +11,7 @@ func Command() *cobra.Command {
 		Long:  "Register, list, and manage forest projects.",
 	}
 
-	cmd.AddCommand(newCmd())
+	cmd.AddCommand(addCmd())
 	cmd.AddCommand(removeCmd())
 
 	return cmd

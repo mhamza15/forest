@@ -208,7 +208,7 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 // View renders the inline tree browser.
 func (m Model) View() string {
 	if len(m.projects) == 0 {
-		return styleDim.Render("No projects registered. Use 'forest project new' to add one.") + "\n"
+		return styleDim.Render("No projects registered. Use 'forest project add' to add one.") + "\n"
 	}
 
 	var b strings.Builder

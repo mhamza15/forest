@@ -15,13 +15,13 @@ go install github.com/mhamza15/forest@latest
 Register a project:
 
 ```
-forest project new ~/dev/myapp
+forest project add ~/dev/myapp
 ```
 
 Create a worktree and open it in a tmux session:
 
 ```
-forest tree new myapp feature/login
+forest tree add myapp feature/login
 ```
 
 Browse all projects and worktrees interactively:
@@ -35,15 +35,15 @@ forest tree
 ### Projects
 
 ```
-forest project new <path> [--name <name>]   Register a git repo as a project
-forest project new                           Interactive mode with file picker
+forest project add <path> [--name <name>]   Register a git repo as a project
+forest project add                           Interactive mode with file picker
 forest project remove <project>              Unregister a project
 ```
 
 ### Worktrees
 
 ```
-forest tree new <project> <branch>           Create worktree + tmux session
+forest tree add <project> <branch>           Create worktree + tmux session
 forest tree remove <project> <branch>        Remove worktree + tmux session
 forest tree                                  Interactive tree browser
 ```

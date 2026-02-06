@@ -14,13 +14,13 @@ import (
 
 var nameFlag string
 
-func newCmd() *cobra.Command {
+func addCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "new [path]",
+		Use:   "add [path]",
 		Short: "Register a new project",
 		Long:  "Register a git repository as a forest project. If no path is given, an interactive prompt is shown.",
 		Args:  cobra.MaximumNArgs(1),
-		RunE:  runNew,
+		RunE:  runAdd,
 	}
 
 	cmd.Flags().StringVar(&nameFlag, "name", "", "project name (defaults to repo directory name)")
@@ -28,9 +28,9 @@ func newCmd() *cobra.Command {
 	return cmd
 }
 
-func runNew(cmd *cobra.Command, args []string) error {
+func runAdd(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
-		return runNewInteractive()
+		return runAddInteractive()
 	}
 
 	return registerProject(args[0], nameFlag)
@@ -65,9 +65,9 @@ func registerProject(repoPath string, name string) error {
 	return nil
 }
 
-// runNewInteractive prompts the user for repo path and project name
+// runAddInteractive prompts the user for repo path and project name
 // using a huh form with a file picker for directory selection.
-func runNewInteractive() error {
+func runAddInteractive() error {
 	var name string
 
 	cwd, _ := filepath.Abs(".")

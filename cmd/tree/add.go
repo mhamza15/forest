@@ -14,9 +14,9 @@ import (
 	"github.com/mhamza15/forest/internal/tmux"
 )
 
-func newCmd() *cobra.Command {
+func addCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "new <project> <branch>",
+		Use:   "add <project> <branch>",
 		Short: "Create a new worktree and tmux session",
 		Long: `Create a new git worktree for the project and open it in a tmux session.
 
@@ -24,12 +24,12 @@ If the worktree already exists, the command switches to the existing
 tmux session instead. The new branch is based on the project's configured
 base branch, falling back to the global default.`,
 		Args:              cobra.ExactArgs(2),
-		RunE:              runNew,
+		RunE:              runAdd,
 		ValidArgsFunction: completion.ProjectThenBranch,
 	}
 }
 
-func runNew(cmd *cobra.Command, args []string) error {
+func runAdd(cmd *cobra.Command, args []string) error {
 	project := args[0]
 	branch := args[1]
 
