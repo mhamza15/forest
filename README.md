@@ -173,11 +173,3 @@ forest completion zsh > "${fpath[1]}/_forest"
 ```
 
 Project names and branch names complete dynamically.
-
-## Requirements
-
-- Go 1.25+
-- git
-- tmux
-
-
