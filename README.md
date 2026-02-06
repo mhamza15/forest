@@ -91,6 +91,7 @@ Available Commands:
   add         Create a new worktree and tmux session
   list        List worktrees for one or all projects
   remove      Remove a worktree and its tmux session
+  switch      Switch to an existing worktree's tmux session
 ```
 
 The interactive tree browser (`forest tree`) supports vim keybindings (`j`/`k`, `ctrl+n`/`ctrl+p`, arrows), `enter`/`l` to open, `tab` to expand/collapse, `d` to delete, `n` to create a new tree, `?` to toggle help, and `q` to quit.
