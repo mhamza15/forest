@@ -65,7 +65,7 @@ func DefaultWorktreeDir() string {
 // ExpandPath replaces a leading ~ with the user's home directory.
 // If the path does not start with ~, it is returned unchanged.
 func ExpandPath(p string) string {
-	if !strings.HasPrefix(p, "~") {
+	if p != "~" && !strings.HasPrefix(p, "~/") {
 		return p
 	}
 

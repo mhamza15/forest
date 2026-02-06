@@ -93,6 +93,11 @@ func TestExpandPath(t *testing.T) {
 			want: "relative/path",
 		},
 		{
+			name: "tilde user unchanged",
+			path: "~user/foo",
+			want: "~user/foo",
+		},
+		{
 			name: "empty string unchanged",
 			path: "",
 			want: "",
