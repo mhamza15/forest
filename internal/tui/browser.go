@@ -3,7 +3,6 @@ package tui
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -14,6 +13,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/mhamza15/forest/internal/config"
+	"github.com/mhamza15/forest/internal/forest"
 	"github.com/mhamza15/forest/internal/git"
 	"github.com/mhamza15/forest/internal/tmux"
 )
@@ -367,29 +367,20 @@ func (m Model) openSelected() (tea.Model, tea.Cmd) {
 
 	sessionName := tmux.SessionName(p.name, branch)
 
+	wtPath := p.trees[ti].Path
+
 	m.action = func() error {
 		if err := tmux.RequireRunning(); err != nil {
 			return err
 		}
 
-		if !tmux.SessionExists(sessionName) {
-			wtPath := p.trees[ti].Path
+		rc, err := config.Resolve(p.name)
+		if err != nil {
+			return err
+		}
 
-			if err := tmux.NewSession(sessionName, wtPath); err != nil {
-				return err
-			}
-
-			rc, err := config.Resolve(p.name)
-			if err == nil && len(rc.Layout) > 0 {
-				windows := make([]tmux.LayoutWindow, len(rc.Layout))
-				for i, w := range rc.Layout {
-					windows[i] = tmux.LayoutWindow{Name: w.Name, Command: w.Command}
-				}
-
-				if err := tmux.ApplyLayout(sessionName, wtPath, windows); err != nil {
-					return err
-				}
-			}
+		if err := forest.OpenSession(rc, branch, wtPath); err != nil {
+			return err
 		}
 
 		return tmux.SwitchTo(sessionName)
@@ -456,12 +447,10 @@ func (m Model) executeForceDelete() (tea.Model, tea.Cmd) {
 			}
 		}
 
-		wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
-
 		return deleteResultMsg{
 			projectIdx: pi, treeIdx: ti,
 			project: p.name, branch: branch,
-			err: git.ForceRemove(rc.Repo, wtPath),
+			err: forest.RemoveTree(rc, branch, true),
 		}
 	}
 
@@ -487,15 +476,10 @@ func (m Model) executeDelete() (tea.Model, tea.Cmd) {
 			}
 		}
 
-		sessionName := tmux.SessionName(p.name, branch)
-		wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
-
-		_ = tmux.KillSession(sessionName)
-
 		return deleteResultMsg{
 			projectIdx: pi, treeIdx: ti,
 			project: p.name, branch: branch,
-			err: git.Remove(rc.Repo, wtPath),
+			err: forest.RemoveTree(rc, branch, false),
 		}
 	}
 
@@ -607,23 +591,18 @@ func (m Model) executeNewTree() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
-
-	if err := git.Add(rc.Repo, wtPath, branch, rc.Branch); err != nil {
+	result, err := forest.AddTree(rc, branch)
+	if err != nil {
 		m.err = err
 		m.mode = modeBrowse
 		return m, nil
-	}
-
-	if len(rc.Copy) > 0 {
-		git.CopyFiles(rc.Repo, wtPath, rc.Copy)
 	}
 
 	// Add to our in-memory list.
 	for i, p := range m.projects {
 		if p.name == m.newProject {
 			m.projects[i].trees = append(m.projects[i].trees, git.Worktree{
-				Path:   wtPath,
+				Path:   result.WorktreePath,
 				Branch: branch,
 			})
 			m.projects[i].expanded = true

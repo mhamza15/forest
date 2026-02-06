@@ -3,15 +3,14 @@ package tree
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/completion"
 	"github.com/mhamza15/forest/internal/config"
+	"github.com/mhamza15/forest/internal/forest"
 	"github.com/mhamza15/forest/internal/git"
-	"github.com/mhamza15/forest/internal/tmux"
 )
 
 func removeCmd() *cobra.Command {
@@ -33,23 +32,7 @@ func runRemove(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	sessionName := tmux.SessionName(rc.Name, branch)
-
-	// Look up the actual worktree path from git rather than constructing
-	// it, so worktrees created before the SafeBranchDir convention or
-	// outside of forest are found correctly.
-	existing := git.FindByBranch(rc.Repo, branch)
-	if existing == nil {
-		return fmt.Errorf("no worktree found for branch %q in project %q", branch, project)
-	}
-
-	wtPath := existing.Path
-
-	if err := tmux.KillSession(sessionName); err != nil {
-		slog.Debug("could not kill tmux session", "session", sessionName, "err", err)
-	}
-
-	if err := git.Remove(rc.Repo, wtPath); err != nil {
+	if err := forest.RemoveTree(rc, branch, false); err != nil {
 		if !errors.Is(err, git.ErrWorktreeDirty) {
 			return err
 		}
@@ -71,7 +54,7 @@ func runRemove(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 
-		if err := git.ForceRemove(rc.Repo, wtPath); err != nil {
+		if err := forest.RemoveTree(rc, branch, true); err != nil {
 			return err
 		}
 	}
