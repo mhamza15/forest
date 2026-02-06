@@ -73,8 +73,13 @@ func LoadGlobal() (GlobalConfig, error) {
 }
 
 // WriteDefaultGlobal writes a default global config file if one does not
-// already exist. It creates parent directories as needed.
+// already exist. It creates parent directories as needed. It also
+// writes the JSON Schema files for editor autocomplete.
 func WriteDefaultGlobal() error {
+	if err := WriteSchemas(); err != nil {
+		return err
+	}
+
 	p := GlobalConfigPath()
 
 	if _, err := os.Stat(p); err == nil {
@@ -85,7 +90,8 @@ func WriteDefaultGlobal() error {
 		return fmt.Errorf("creating config directory: %w", err)
 	}
 
-	content := []byte(`# Forest global configuration
+	content := ConfigSchemaModeline() + "\n" + `
+# Forest global configuration
 
 # Default directory for storing worktrees. Worktrees are organized
 # as: <worktree_dir>/<project>/<branch> (default: ~/.local/share/forest/worktrees/)
@@ -93,9 +99,9 @@ worktree_dir: ~/.local/share/forest/worktrees
 
 # Default branch to base new worktrees on (default: main)
 branch: main
-`)
+`
 
-	if err := os.WriteFile(p, content, 0o644); err != nil {
+	if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("writing default global config: %w", err)
 	}
 
