@@ -90,6 +90,7 @@ Usage:
 Available Commands:
   add         Create a new worktree and tmux session
   list        List worktrees for one or all projects
+  prune       Remove worktrees for branches merged into the base branch
   remove      Remove a worktree and its tmux session
   switch      Switch to an existing worktree's tmux session
 ```

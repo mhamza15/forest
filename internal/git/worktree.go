@@ -64,6 +64,14 @@ func BranchExists(repoPath, branch string) bool {
 	return cmd.Run() == nil
 }
 
+// IsMerged returns true if the given branch has been merged into the
+// target branch. It uses git merge-base --is-ancestor to check
+// whether the branch's HEAD is an ancestor of the target.
+func IsMerged(repoPath, branch, target string) bool {
+	cmd := exec.Command("git", "-C", repoPath, "merge-base", "--is-ancestor", branch, target)
+	return cmd.Run() == nil
+}
+
 // Remove removes the worktree at the given path. If the worktree has
 // modified or untracked files, it returns ErrWorktreeDirty. Use
 // ForceRemove to remove it anyway.
