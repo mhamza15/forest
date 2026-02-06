@@ -68,12 +68,8 @@ func LoadProject(name string) (ProjectConfig, error) {
 }
 
 // SaveProject writes a project config to disk, creating parent directories
-// as needed. It also writes the JSON Schema files for editor autocomplete.
+// as needed.
 func SaveProject(name string, cfg ProjectConfig) error {
-	if err := WriteSchemas(); err != nil {
-		return err
-	}
-
 	p := ProjectConfigPath(name)
 
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {

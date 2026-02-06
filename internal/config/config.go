@@ -73,13 +73,8 @@ func LoadGlobal() (GlobalConfig, error) {
 }
 
 // WriteDefaultGlobal writes a default global config file if one does not
-// already exist. It creates parent directories as needed. It also
-// writes the JSON Schema files for editor autocomplete.
+// already exist. It creates parent directories as needed.
 func WriteDefaultGlobal() error {
-	if err := WriteSchemas(); err != nil {
-		return err
-	}
-
 	p := GlobalConfigPath()
 
 	if _, err := os.Stat(p); err == nil {

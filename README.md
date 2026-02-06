@@ -101,13 +101,13 @@ layout:
 
 ## Editor autocomplete
 
-Forest embeds JSON Schema files and writes them to `~/.config/forest/schema/` when config files are created. Editors with `yaml-language-server` support (VS Code with the YAML extension, neovim with yamlls) pick up the schema automatically via the modeline comment at the top of each generated config file:
+Generated config files include a `yaml-language-server` modeline pointing to the JSON Schema hosted on GitHub:
 
 ```yaml
-# yaml-language-server: $schema=/home/user/.config/forest/schema/config.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mhamza15/forest/main/internal/config/schema/config.schema.json
 ```
 
-This provides field completion, validation, and hover documentation as you edit.
+Editors with yaml-language-server support (VS Code YAML extension, neovim yamlls) provide field completion, validation, and hover documentation automatically.
 
 ## Shell completions
 
