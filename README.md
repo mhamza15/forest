@@ -4,6 +4,8 @@ Forest is a CLI tool for managing git worktrees and tmux sessions.
 
 It simplifies the workflow of creating and managing multiple working copies of a repository, each in its own directory with a dedicated tmux session.
 
+Check the installed version with `forest --version`.
+
 ## Install
 
 ```
@@ -38,6 +40,7 @@ forest tree
 forest project add <path> [--name <name>]   Register a git repo as a project
 forest project add                           Interactive mode with file picker
 forest project remove <project>              Unregister a project
+forest project list                          List all registered projects
 ```
 
 ### Worktrees
@@ -45,10 +48,20 @@ forest project remove <project>              Unregister a project
 ```
 forest tree add <project> <branch>           Create worktree + tmux session
 forest tree remove <project> <branch>        Remove worktree + tmux session
+forest tree remove <project> <branch> --force
+                                             Remove even with uncommitted changes
+forest tree list [project]                   List worktrees, optionally filtered
 forest tree                                  Interactive tree browser
 ```
 
 The interactive tree browser supports vim keybindings (`j`/`k`, `ctrl+n`/`ctrl+p`, arrows), `enter` to open, `d` to delete, `n` to create a new tree, and `?` to toggle the full help view.
+
+### Sessions
+
+```
+forest session list                          List active tmux sessions
+forest session kill                          Kill a tmux session
+```
 
 ### Configuration
 
