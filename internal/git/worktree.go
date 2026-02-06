@@ -72,6 +72,54 @@ func IsMerged(repoPath, branch, target string) bool {
 	return cmd.Run() == nil
 }
 
+// RemoteBranches returns the set of branch names that exist on the
+// given remote. It calls git ls-remote --heads once and parses all
+// results, making it efficient for checking many branches.
+func RemoteBranches(repoPath, remote string) (map[string]bool, error) {
+	cmd := exec.Command("git", "-C", repoPath, "ls-remote", "--heads", remote)
+
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("git ls-remote: %w", err)
+	}
+
+	branches := make(map[string]bool)
+	prefix := "refs/heads/"
+
+	scanner := bufio.NewScanner(bytes.NewReader(output))
+
+	for scanner.Scan() {
+		// Each line is: <sha>\trefs/heads/<branch>
+		parts := strings.SplitN(scanner.Text(), "\t", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		if name, ok := strings.CutPrefix(parts[1], prefix); ok {
+			branches[name] = true
+		}
+	}
+
+	return branches, nil
+}
+
+// IsPrunable returns true if a branch should be considered for pruning.
+// A branch is prunable if it has been merged into the target (via
+// merge-base --is-ancestor), or if it no longer exists on the remote
+// (common after squash-merge workflows where the remote branch is
+// deleted after the PR is merged).
+func IsPrunable(repoPath, branch, target string, remoteBranches map[string]bool) bool {
+	if IsMerged(repoPath, branch, target) {
+		return true
+	}
+
+	if remoteBranches != nil && !remoteBranches[branch] {
+		return true
+	}
+
+	return false
+}
+
 // Remove removes the worktree at the given path. If the worktree has
 // modified or untracked files, it returns ErrWorktreeDirty. Use
 // ForceRemove to remove it anyway.

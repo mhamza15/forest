@@ -2,6 +2,7 @@ package tree
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/spf13/cobra"
 
@@ -16,10 +17,11 @@ var dryRunFlag bool
 func pruneCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "prune [project]",
-		Short: "Remove worktrees for branches merged into the base branch",
+		Short: "Remove worktrees whose branches have been merged or deleted",
 		Long: `Check each worktree's branch and remove it if it has been merged
-into the project's base branch. The base branch worktree itself is
-never pruned.`,
+into the project's base branch, or if the branch no longer exists on
+the remote (common after squash-merge workflows). The base branch
+worktree itself is never pruned.`,
 		Args:              cobra.MaximumNArgs(1),
 		RunE:              runPrune,
 		ValidArgsFunction: completion.Projects,
@@ -57,12 +59,19 @@ func runPrune(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
+		// Fetch remote branches once per project so we can detect
+		// branches deleted after a squash-merge PR.
+		remoteBranches, err := git.RemoteBranches(rc.Repo, "origin")
+		if err != nil {
+			slog.Debug("could not fetch remote branches", "project", name, "err", err)
+		}
+
 		for _, t := range trees {
 			if t.Bare || t.Branch == "" || t.Branch == rc.Branch {
 				continue
 			}
 
-			if !git.IsMerged(rc.Repo, t.Branch, rc.Branch) {
+			if !git.IsPrunable(rc.Repo, t.Branch, rc.Branch, remoteBranches) {
 				continue
 			}
 
