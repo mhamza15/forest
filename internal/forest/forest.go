@@ -107,15 +107,22 @@ func RemoveTree(rc config.ResolvedConfig, branch string, force bool) error {
 	}
 
 	wtPath := existing.Path
-	sessionName := tmux.SessionName(rc.Name, branch)
 
-	if err := tmux.KillSession(sessionName); err != nil {
-		slog.Debug("could not kill tmux session", "session", sessionName, "err", err)
-	}
-
+	var err error
 	if force {
-		return git.ForceRemove(rc.Repo, wtPath)
+		err = git.ForceRemove(rc.Repo, wtPath)
+	} else {
+		err = git.Remove(rc.Repo, wtPath)
 	}
 
-	return git.Remove(rc.Repo, wtPath)
+	if err != nil {
+		return err
+	}
+
+	sessionName := tmux.SessionName(rc.Name, branch)
+	if killErr := tmux.KillSession(sessionName); killErr != nil {
+		slog.Debug("could not kill tmux session", "session", sessionName, "err", killErr)
+	}
+
+	return nil
 }
