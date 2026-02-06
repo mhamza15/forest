@@ -35,7 +35,6 @@ forest tree
 ## Commands
 
 ```
-$ forest --help
 Forest is a CLI tool for managing git worktrees and tmux sessions.
 
 It simplifies the workflow of creating and managing multiple working
@@ -64,7 +63,6 @@ Use "forest [command] --help" for more information about a command.
 ### Projects
 
 ```
-$ forest project --help
 Register, list, and manage forest projects.
 
 Usage:
@@ -79,7 +77,6 @@ Available Commands:
 ### Worktrees
 
 ```
-$ forest tree --help
 Create, remove, and browse worktrees. Run without a subcommand
 to open the interactive tree browser.
 
@@ -98,7 +95,6 @@ The interactive tree browser (`forest tree`) supports vim keybindings (`j`/`k`, 
 ### Sessions
 
 ```
-$ forest session --help
 Manage tmux sessions without affecting worktrees.
 
 Usage:
@@ -112,7 +108,6 @@ Available Commands:
 ### Configuration
 
 ```
-$ forest config --help
 Opens the global config in $EDITOR. If a project name is given,
 opens that project's config instead.
 
