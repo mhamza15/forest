@@ -42,7 +42,6 @@ func Add(repoPath, worktreePath, branch, baseBranch string) error {
 		args = []string{"-C", repoPath, "worktree", "add", "-b", branch, worktreePath, baseBranch}
 	}
 
-	//nolint:gosec // Arguments are derived from validated config, not user input.
 	cmd := exec.Command("git", args...)
 
 	output, err := cmd.CombinedOutput()
@@ -80,7 +79,6 @@ func removeWorktree(repoPath, worktreePath string, force bool) error {
 	}
 	args = append(args, worktreePath)
 
-	//nolint:gosec // Arguments are derived from validated config, not user input.
 	cmd := exec.Command("git", args...)
 
 	output, err := cmd.CombinedOutput()
@@ -100,7 +98,6 @@ func removeWorktree(repoPath, worktreePath string, force bool) error {
 // List returns all worktrees for the repository at repoPath by parsing
 // the porcelain output of git worktree list.
 func List(repoPath string) ([]Worktree, error) {
-	//nolint:gosec // repoPath is derived from validated config.
 	cmd := exec.Command("git", "-C", repoPath, "worktree", "list", "--porcelain")
 
 	output, err := cmd.Output()

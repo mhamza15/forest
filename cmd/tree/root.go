@@ -20,7 +20,6 @@ func Command() *cobra.Command {
 }
 
 // runBrowser launches the inline TUI for browsing projects and trees.
-// Wired up in a later commit.
 func runBrowser(cmd *cobra.Command, args []string) error {
 	return runTreeBrowser()
 }
