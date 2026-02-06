@@ -1,10 +1,10 @@
 # 🌳 forest
 
-Forest is a CLI tool for managing git worktrees and tmux sessions.
+Forest is a simple CLI tool for managing git worktrees and tmux sessions.
 
-It simplifies the workflow of creating and managing multiple working copies of a repository, each in its own directory with a dedicated tmux session.
+It was created to support my development workflow, which involves multiple AI agents working in the same repository on different tasks, isolated with Git worktrees. I would find myself often creating a new tmux session, navigating to the repo I'd like to work on, creating a Git worktree, navigating to the worktree, then setting up my typical layout of a coding agent, an editor, and other miscellaneous windows depending on the project. With the proliferation of worktrees/tmux sessions, it got a little challenging to manage.
 
-Check the installed version with `forest --version`.
+Forest does essentially just that, but in an automated, configurable fashion. It optionally adds a friendly TUI on top of that to hopefully make things easier to manage.
 
 ## Install
 
