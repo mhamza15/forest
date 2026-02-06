@@ -374,8 +374,21 @@ func (m Model) openSelected() (tea.Model, tea.Cmd) {
 
 		if !tmux.SessionExists(sessionName) {
 			wtPath := p.trees[ti].Path
+
 			if err := tmux.NewSession(sessionName, wtPath); err != nil {
 				return err
+			}
+
+			rc, err := config.Resolve(p.name)
+			if err == nil && len(rc.Layout) > 0 {
+				commands := make([]string, len(rc.Layout))
+				for i, w := range rc.Layout {
+					commands[i] = w.Command
+				}
+
+				if err := tmux.ApplyLayout(sessionName, wtPath, commands); err != nil {
+					return err
+				}
 			}
 		}
 
