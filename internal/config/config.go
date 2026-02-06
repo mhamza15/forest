@@ -12,15 +12,22 @@ import (
 
 // Window describes a tmux window to create as part of a session layout.
 type Window struct {
+	// Command is the shell command to run in this window.
+	// An empty string opens a plain shell.
 	Command string `yaml:"command"`
 }
 
 // GlobalConfig holds the top-level forest configuration.
 // It is stored at $XDG_CONFIG_HOME/forest/config.yaml.
 type GlobalConfig struct {
-	WorktreeDir string   `yaml:"worktree_dir"`
-	Branch      string   `yaml:"branch"`
-	Layout      []Window `yaml:"layout,omitempty"`
+	// WorktreeDir is the base directory for storing worktrees.
+	WorktreeDir string `yaml:"worktree_dir"`
+
+	// Branch is the default base branch for new worktrees.
+	Branch string `yaml:"branch"`
+
+	// Layout defines the tmux windows to create for each new session.
+	Layout []Window `yaml:"layout,omitempty"`
 }
 
 const (

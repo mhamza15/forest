@@ -25,9 +25,14 @@ func SafeBranchDir(branch string) string {
 // Worktree represents a single git worktree entry as reported by
 // git worktree list --porcelain.
 type Worktree struct {
-	Path   string
+	// Path is the filesystem path to the worktree directory.
+	Path string
+
+	// Branch is the local branch name checked out in this worktree.
 	Branch string
-	Bare   bool
+
+	// Bare is true if this entry represents a bare repository.
+	Bare bool
 }
 
 // Add creates a new worktree at worktreePath for the given branch. If

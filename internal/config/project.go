@@ -13,22 +13,42 @@ import (
 // ProjectConfig holds per-project overrides. Empty fields fall through
 // to the global config during resolution.
 type ProjectConfig struct {
-	Repo        string   `yaml:"repo"`
-	WorktreeDir string   `yaml:"worktree_dir,omitempty"`
-	Branch      string   `yaml:"branch,omitempty"`
-	Copy        []string `yaml:"copy,omitempty"`
-	Layout      []Window `yaml:"layout,omitempty"`
+	// Repo is the absolute path to the git repository.
+	Repo string `yaml:"repo"`
+
+	// WorktreeDir overrides the global worktree directory for this project.
+	WorktreeDir string `yaml:"worktree_dir,omitempty"`
+
+	// Branch overrides the global base branch for this project.
+	Branch string `yaml:"branch,omitempty"`
+
+	// Copy lists files relative to the repo root to copy into each new worktree.
+	Copy []string `yaml:"copy,omitempty"`
+
+	// Layout overrides the global tmux window layout for this project.
+	Layout []Window `yaml:"layout,omitempty"`
 }
 
 // ResolvedConfig is the final configuration for a project after merging
 // project-level overrides onto the global defaults.
 type ResolvedConfig struct {
-	Name        string
-	Repo        string
+	// Name is the project name used in config paths and session names.
+	Name string
+
+	// Repo is the absolute path to the git repository.
+	Repo string
+
+	// WorktreeDir is the resolved base directory for worktrees.
 	WorktreeDir string
-	Branch      string
-	Copy        []string
-	Layout      []Window
+
+	// Branch is the resolved base branch for new worktrees.
+	Branch string
+
+	// Copy lists files to copy from the repo root into each new worktree.
+	Copy []string
+
+	// Layout defines the tmux windows to create for each new session.
+	Layout []Window
 }
 
 // LoadProject reads a project config file by name.
