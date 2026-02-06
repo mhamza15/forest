@@ -21,7 +21,7 @@ func TestSessionName(t *testing.T) {
 		{
 			project: "myapp",
 			branch:  "feature/login",
-			want:    "myapp-feature/login",
+			want:    "myapp-feature-login",
 		},
 		{
 			project: "my.app",

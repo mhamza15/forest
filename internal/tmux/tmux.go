@@ -202,7 +202,13 @@ func ApplyLayout(session, workdir string, windows []LayoutWindow) error {
 // SessionName builds the conventional forest session name from a
 // project name and branch.
 func SessionName(project, branch string) string {
-	// Tmux does not allow dots in session names, so replace them.
 	name := project + "-" + branch
-	return strings.ReplaceAll(name, ".", "_")
+
+	// Tmux does not allow dots in session names.
+	name = strings.ReplaceAll(name, ".", "_")
+
+	// Replace slashes for consistency with SafeBranchDir.
+	name = strings.ReplaceAll(name, "/", "-")
+
+	return name
 }
