@@ -78,6 +78,17 @@ func runNew(cmd *cobra.Command, args []string) error {
 		if err := tmux.NewSession(sessionName, wtPath); err != nil {
 			return err
 		}
+
+		if len(rc.Layout) > 0 {
+			commands := make([]string, len(rc.Layout))
+			for i, w := range rc.Layout {
+				commands[i] = w.Command
+			}
+
+			if err := tmux.ApplyLayout(sessionName, wtPath, commands); err != nil {
+				return err
+			}
+		}
 	}
 
 	slog.Debug("switching to tmux session", "session", sessionName)
