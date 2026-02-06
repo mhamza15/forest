@@ -28,6 +28,11 @@ func TestSessionName(t *testing.T) {
 			branch:  "v1.0",
 			want:    "my_app-v1_0",
 		},
+		{
+			project: "myapp",
+			branch:  "fix:login:bug",
+			want:    "myapp-fix-login-bug",
+		},
 	}
 
 	for _, tt := range tests {

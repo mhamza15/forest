@@ -210,5 +210,9 @@ func SessionName(project, branch string) string {
 	// Replace slashes for consistency with SafeBranchDir.
 	name = strings.ReplaceAll(name, "/", "-")
 
+	// Tmux uses colons as separator in target syntax (session:window).
+	// A colon in the session name would break target resolution.
+	name = strings.ReplaceAll(name, ":", "-")
+
 	return name
 }
