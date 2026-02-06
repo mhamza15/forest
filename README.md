@@ -26,7 +26,7 @@ Next, create a worktree and tmux session for a branch:
 forest tree add myapp feature/login
 ```
 
-This creates a worktree at `~/.local/share/forest/worktrees/myapp/feature-login`, starts a tmux session named `myapp-feature-login`, and switches to it.
+This creates a worktree at `<worktree_dir>/myapp/feature-login` (`worktree_dir` defaults to `~/.local/share/forest/worktrees`), starts a tmux session named `myapp-feature-login`, and switches to it.
 
 To browse all projects and their worktrees interactively:
 
