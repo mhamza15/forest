@@ -35,7 +35,7 @@ func runRemove(cmd *cobra.Command, args []string) error {
 	}
 
 	sessionName := tmux.SessionName(rc.Name, branch)
-	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, branch)
+	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
 
 	if err := tmux.KillSession(sessionName); err != nil {
 		slog.Debug("could not kill tmux session", "session", sessionName, "err", err)

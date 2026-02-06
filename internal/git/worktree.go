@@ -15,6 +15,13 @@ import (
 // files and cannot be removed without --force.
 var ErrWorktreeDirty = errors.New("worktree contains modified or untracked files")
 
+// SafeBranchDir converts a branch name into a flat directory name by
+// replacing path separators with dashes. Without this, a branch like
+// feature/login would create nested directories.
+func SafeBranchDir(branch string) string {
+	return strings.ReplaceAll(branch, "/", "-")
+}
+
 // Worktree represents a single git worktree entry as reported by
 // git worktree list --porcelain.
 type Worktree struct {

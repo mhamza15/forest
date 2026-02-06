@@ -443,7 +443,7 @@ func (m Model) executeForceDelete() (tea.Model, tea.Cmd) {
 			}
 		}
 
-		wtPath := filepath.Join(rc.WorktreeDir, rc.Name, branch)
+		wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
 
 		return deleteResultMsg{
 			projectIdx: pi, treeIdx: ti,
@@ -475,7 +475,7 @@ func (m Model) executeDelete() (tea.Model, tea.Cmd) {
 		}
 
 		sessionName := tmux.SessionName(p.name, branch)
-		wtPath := filepath.Join(rc.WorktreeDir, rc.Name, branch)
+		wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
 
 		_ = tmux.KillSession(sessionName)
 
@@ -594,7 +594,7 @@ func (m Model) executeNewTree() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, branch)
+	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
 
 	if err := git.Add(rc.Repo, wtPath, branch, rc.Branch); err != nil {
 		m.err = err

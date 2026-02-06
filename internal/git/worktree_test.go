@@ -127,3 +127,21 @@ branch refs/heads/main`
 	require.Len(t, trees, 1)
 	assert.Equal(t, "main", trees[0].Branch)
 }
+
+func TestSafeBranchDir(t *testing.T) {
+	tests := []struct {
+		branch string
+		want   string
+	}{
+		{branch: "main", want: "main"},
+		{branch: "feature/login", want: "feature-login"},
+		{branch: "dependabot/go_modules/all-ac6d7e69db", want: "dependabot-go_modules-all-ac6d7e69db"},
+		{branch: "no-slashes", want: "no-slashes"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.branch, func(t *testing.T) {
+			assert.Equal(t, tt.want, SafeBranchDir(tt.branch))
+		})
+	}
+}

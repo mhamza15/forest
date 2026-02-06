@@ -42,7 +42,7 @@ func runNew(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, branch)
+	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
 	sessionName := tmux.SessionName(rc.Name, branch)
 
 	// If the worktree directory already exists, skip creation and just
