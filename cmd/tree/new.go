@@ -65,6 +65,13 @@ func runNew(cmd *cobra.Command, args []string) error {
 		}
 
 		fmt.Printf("Created worktree %s/%s\n", project, branch)
+
+		if len(rc.Copy) > 0 {
+			warnings := git.CopyFiles(rc.Repo, wtPath, rc.Copy)
+			for _, w := range warnings {
+				fmt.Println(w)
+			}
+		}
 	}
 
 	if !tmux.SessionExists(sessionName) {

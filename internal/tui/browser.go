@@ -602,6 +602,10 @@ func (m Model) executeNewTree() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	if len(rc.Copy) > 0 {
+		git.CopyFiles(rc.Repo, wtPath, rc.Copy)
+	}
+
 	// Add to our in-memory list.
 	for i, p := range m.projects {
 		if p.name == m.newProject {
