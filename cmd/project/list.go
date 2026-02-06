@@ -5,9 +5,16 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/config"
+)
+
+var (
+	projectNameStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#89B4FA"))
+	pathStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#6C7086"))
+	headerStyle      = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#6C7086"))
 )
 
 func listCmd() *cobra.Command {
@@ -32,6 +39,7 @@ func runList(cmd *cobra.Command, args []string) error {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	_, _ = fmt.Fprintf(w, "%s\t%s\n", headerStyle.Render("Project"), headerStyle.Render("Repo"))
 
 	for _, name := range names {
 		proj, err := config.LoadProject(name)
@@ -39,7 +47,10 @@ func runList(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		_, _ = fmt.Fprintf(w, "%s\t%s\n", name, proj.Repo)
+		_, _ = fmt.Fprintf(w, "%s\t%s\n",
+			projectNameStyle.Render(name),
+			pathStyle.Render(proj.Repo),
+		)
 	}
 
 	return w.Flush()

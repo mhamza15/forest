@@ -5,11 +5,18 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/git"
 	"github.com/mhamza15/forest/internal/tmux"
+)
+
+var (
+	sessionStyle   = lipgloss.NewStyle().Bold(true)
+	sessionProject = lipgloss.NewStyle().Foreground(lipgloss.Color("#89B4FA"))
+	sessionBranch  = lipgloss.NewStyle().Foreground(lipgloss.Color("#A6E3A1"))
 )
 
 func listCmd() *cobra.Command {
@@ -54,7 +61,11 @@ func runList(_ *cobra.Command, _ []string) error {
 				continue
 			}
 
-			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", session, name, wt.Branch)
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n",
+				sessionStyle.Render(session),
+				sessionProject.Render(name),
+				sessionBranch.Render(wt.Branch),
+			)
 			found++
 		}
 	}

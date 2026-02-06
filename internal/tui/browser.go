@@ -107,7 +107,7 @@ func NewModel() (Model, error) {
 
 	s := spinner.New(
 		spinner.WithSpinner(spinner.Dot),
-		spinner.WithStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("11"))),
+		spinner.WithStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("#F9E2AF"))),
 	)
 
 	return Model{

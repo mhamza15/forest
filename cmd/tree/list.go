@@ -5,11 +5,18 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/completion"
 	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/git"
+)
+
+var (
+	projectStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#89B4FA"))
+	branchStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#A6E3A1"))
+	pathDimStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#6C7086"))
 )
 
 func listCmd() *cobra.Command {
@@ -72,10 +79,13 @@ func runList(cmd *cobra.Command, args []string) error {
 		}
 
 		found = true
-		_, _ = fmt.Fprintln(w, name)
+		_, _ = fmt.Fprintln(w, projectStyle.Render(name))
 
 		for _, r := range rows {
-			_, _ = fmt.Fprintf(w, "  %s\t%s\n", r.branch, r.path)
+			_, _ = fmt.Fprintf(w, "  %s\t%s\n",
+				branchStyle.Render(r.branch),
+				pathDimStyle.Render(r.path),
+			)
 		}
 	}
 
