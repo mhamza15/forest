@@ -1,4 +1,4 @@
-# forest
+# 🌳 forest
 
 Forest is a CLI tool for managing git worktrees and tmux sessions.
 
