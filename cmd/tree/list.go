@@ -34,6 +34,8 @@ func runList(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	found := false
+
 	for _, name := range names {
 		proj, err := config.LoadProject(name)
 		if err != nil {
@@ -45,15 +47,32 @@ func runList(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		fmt.Println(name)
+		// Buffer worktree lines so we only print the project header
+		// when there is at least one non-skipped worktree.
+		var lines []string
 
 		for _, t := range trees {
-			if t.Bare {
+			if t.Bare || t.Branch == "" {
 				continue
 			}
 
-			fmt.Printf("  %s\t%s\n", t.Branch, t.Path)
+			lines = append(lines, fmt.Sprintf("  %s\t%s\n", t.Branch, t.Path))
 		}
+
+		if len(lines) == 0 {
+			continue
+		}
+
+		found = true
+		fmt.Println(name)
+
+		for _, l := range lines {
+			fmt.Print(l)
+		}
+	}
+
+	if !found {
+		fmt.Println("No worktrees found.")
 	}
 
 	return nil

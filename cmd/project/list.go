@@ -35,7 +35,7 @@ func runList(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		fmt.Printf("%s  %s\n", name, proj.Repo)
+		fmt.Printf("%s\t%s\n", name, proj.Repo)
 	}
 
 	return nil

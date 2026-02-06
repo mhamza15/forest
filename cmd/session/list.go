@@ -14,6 +14,7 @@ func listCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List active tmux sessions",
+		Args:  cobra.NoArgs,
 		RunE:  runList,
 	}
 }
