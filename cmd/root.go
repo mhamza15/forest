@@ -34,10 +34,13 @@ It simplifies the workflow of creating and managing multiple working
 copies of a repository, each in its own directory with a dedicated
 tmux session.`,
 
-	SilenceUsage:  true,
 	SilenceErrors: true,
 
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// Silence usage after the command has been resolved. This way
+		// cobra still shows usage for unknown subcommands and arg
+		// validation errors, but not for runtime errors.
+		cmd.SilenceUsage = true
 		initLogging()
 	},
 }
