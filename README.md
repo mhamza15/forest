@@ -120,6 +120,8 @@ Usage:
 Global config lives at `$XDG_CONFIG_HOME/forest/config.yaml` (defaults to `~/.config/forest/config.yaml`):
 
 ```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mhamza15/forest/main/internal/config/schema/config.schema.json
+
 # Default directory for storing worktrees.
 # Organized as: <worktree_dir>/<project>/<branch>
 worktree_dir: ~/.local/share/forest/worktrees
@@ -139,6 +141,8 @@ layout:
 Per-project configs live at `~/.config/forest/projects/<name>.yaml` and can override any global setting:
 
 ```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mhamza15/forest/main/internal/config/schema/project.schema.json
+
 repo: /path/to/repo
 worktree_dir: ""   # empty = use global default
 branch: ""         # empty = use global default
@@ -156,16 +160,6 @@ layout:
     command: go test ./...
   - command: ""
 ```
-
-## Editor autocomplete
-
-Generated config files include a `yaml-language-server` modeline pointing to the JSON Schema hosted on GitHub:
-
-```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/mhamza15/forest/main/internal/config/schema/config.schema.json
-```
-
-Editors with yaml-language-server support (VS Code YAML extension, neovim yamlls) provide field completion, validation, and hover documentation automatically.
 
 ## Shell completions
 
