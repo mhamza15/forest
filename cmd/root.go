@@ -17,6 +17,9 @@ import (
 	treecmd "github.com/mhamza15/forest/cmd/tree"
 )
 
+// Version is set at build time via -ldflags.
+var Version = "dev"
+
 var verbose bool
 
 // rootCmd is the top-level forest command.
@@ -38,6 +41,7 @@ tmux session.`,
 }
 
 func init() {
+	rootCmd.Version = Version
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable debug logging")
 
 	rootCmd.AddCommand(configcmd.Command())
