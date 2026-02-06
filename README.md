@@ -48,19 +48,19 @@ forest project list                          List all registered projects
 ```
 forest tree add <project> <branch>           Create worktree + tmux session
 forest tree remove <project> <branch>        Remove worktree + tmux session
-forest tree remove <project> <branch> --force
+forest tree remove <project> <branch> [-f|--force]
                                              Remove even with uncommitted changes
 forest tree list [project]                   List worktrees, optionally filtered
 forest tree                                  Interactive tree browser
 ```
 
-The interactive tree browser supports vim keybindings (`j`/`k`, `ctrl+n`/`ctrl+p`, arrows), `enter` to open, `d` to delete, `n` to create a new tree, and `?` to toggle the full help view.
+The interactive tree browser supports vim keybindings (`j`/`k`, `ctrl+n`/`ctrl+p`, arrows), `enter`/`l` to open, `tab` to expand/collapse, `d` to delete, `n` to create a new tree, `?` to toggle help, and `q` to quit.
 
 ### Sessions
 
 ```
 forest session list                          List active tmux sessions
-forest session kill                          Kill a tmux session
+forest session kill <project> <branch>       Kill a tmux session
 ```
 
 ### Configuration
@@ -72,7 +72,7 @@ forest config <project>                      Open project config in $EDITOR
 
 ## Configuration
 
-Global config lives at `~/.config/forest/config.yaml`:
+Global config lives at `$XDG_CONFIG_HOME/forest/config.yaml` (defaults to `~/.config/forest/config.yaml`):
 
 ```yaml
 # Default directory for storing worktrees.
@@ -137,3 +137,8 @@ Project names and branch names complete dynamically.
 - Go 1.25+
 - git
 - tmux
+
+## Global flags
+
+- `-V, --verbose` -- enable debug logging
+- `--version` -- print version
