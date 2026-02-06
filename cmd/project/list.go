@@ -2,6 +2,8 @@ package project
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 
@@ -29,14 +31,16 @@ func runList(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+
 	for _, name := range names {
 		proj, err := config.LoadProject(name)
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("%s\t%s\n", name, proj.Repo)
+		_, _ = fmt.Fprintf(w, "%s\t%s\n", name, proj.Repo)
 	}
 
-	return nil
+	return w.Flush()
 }

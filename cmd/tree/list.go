@@ -2,6 +2,8 @@ package tree
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 
@@ -34,6 +36,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	found := false
 
 	for _, name := range names {
@@ -49,31 +52,37 @@ func runList(cmd *cobra.Command, args []string) error {
 
 		// Buffer worktree lines so we only print the project header
 		// when there is at least one non-skipped worktree.
-		var lines []string
+		type row struct {
+			branch string
+			path   string
+		}
+
+		var rows []row
 
 		for _, t := range trees {
 			if t.Bare || t.Branch == "" {
 				continue
 			}
 
-			lines = append(lines, fmt.Sprintf("  %s\t%s\n", t.Branch, t.Path))
+			rows = append(rows, row{branch: t.Branch, path: t.Path})
 		}
 
-		if len(lines) == 0 {
+		if len(rows) == 0 {
 			continue
 		}
 
 		found = true
-		fmt.Println(name)
+		_, _ = fmt.Fprintln(w, name)
 
-		for _, l := range lines {
-			fmt.Print(l)
+		for _, r := range rows {
+			_, _ = fmt.Fprintf(w, "  %s\t%s\n", r.branch, r.path)
 		}
 	}
 
 	if !found {
 		fmt.Println("No worktrees found.")
+		return nil
 	}
 
-	return nil
+	return w.Flush()
 }

@@ -2,6 +2,8 @@ package session
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 
@@ -27,6 +29,7 @@ func runList(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("listing projects: %w", err)
 	}
 
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	var found int
 
 	for _, name := range projects {
@@ -51,14 +54,15 @@ func runList(_ *cobra.Command, _ []string) error {
 				continue
 			}
 
-			fmt.Printf("%s\t%s\t%s\n", session, name, wt.Branch)
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", session, name, wt.Branch)
 			found++
 		}
 	}
 
 	if found == 0 {
 		fmt.Println("No active sessions.")
+		return nil
 	}
 
-	return nil
+	return w.Flush()
 }
