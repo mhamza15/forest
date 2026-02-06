@@ -104,6 +104,69 @@ func KillSession(name string) error {
 	return nil
 }
 
+// NewWindow creates a new window in the named session with its working
+// directory set to workdir. If command is non-empty, it is sent to the
+// window as keystrokes followed by Enter.
+func NewWindow(session, workdir, command string) error {
+	cmd := exec.Command(
+		"tmux", "new-window",
+		"-t", session,
+		"-c", workdir,
+	)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("tmux new-window: %s: %w", strings.TrimSpace(string(output)), err)
+	}
+
+	if command != "" {
+		return SendKeys(session, command)
+	}
+
+	return nil
+}
+
+// SendKeys sends a command string to the current window of the named
+// session, followed by Enter.
+func SendKeys(session, command string) error {
+	cmd := exec.Command("tmux", "send-keys", "-t", session, command, "Enter")
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("tmux send-keys: %s: %w", strings.TrimSpace(string(output)), err)
+	}
+
+	return nil
+}
+
+// ApplyLayout creates tmux windows for the given layout in the named
+// session. The first command is sent to the session's initial window;
+// subsequent commands each create a new window. An empty string opens
+// a plain shell. workdir is the working directory for all windows.
+func ApplyLayout(session, workdir string, commands []string) error {
+	for i, cmd := range commands {
+		if i == 0 {
+			if cmd != "" {
+				if err := SendKeys(session, cmd); err != nil {
+					return err
+				}
+			}
+			continue
+		}
+
+		if err := NewWindow(session, workdir, cmd); err != nil {
+			return err
+		}
+	}
+
+	// Select the first window so the user lands there on attach.
+	if len(commands) > 1 {
+		_ = exec.Command("tmux", "select-window", "-t", session+":0").Run()
+	}
+
+	return nil
+}
+
 // SessionName builds the conventional forest session name from a
 // project name and branch.
 func SessionName(project, branch string) string {
