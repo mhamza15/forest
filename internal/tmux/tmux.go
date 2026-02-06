@@ -191,8 +191,9 @@ func ApplyLayout(session, workdir string, windows []LayoutWindow) error {
 	}
 
 	// Select the first window so the user lands there on attach.
-	if len(windows) > 1 {
-		_ = exec.Command("tmux", "select-window", "-t", session+":0").Run()
+	// Use ^ to target the first window regardless of base-index.
+	if len(windows) > 0 {
+		_ = exec.Command("tmux", "select-window", "-t", session+":^").Run()
 	}
 
 	return nil
