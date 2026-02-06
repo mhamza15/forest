@@ -12,6 +12,9 @@ import (
 
 // Window describes a tmux window to create as part of a session layout.
 type Window struct {
+	// Name is the tmux window title. If empty, tmux uses its default.
+	Name string `yaml:"name,omitempty"`
+
 	// Command is the shell command to run in this window.
 	// An empty string opens a plain shell.
 	Command string `yaml:"command"`

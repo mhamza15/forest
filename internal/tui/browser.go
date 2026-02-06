@@ -381,12 +381,12 @@ func (m Model) openSelected() (tea.Model, tea.Cmd) {
 
 			rc, err := config.Resolve(p.name)
 			if err == nil && len(rc.Layout) > 0 {
-				commands := make([]string, len(rc.Layout))
+				windows := make([]tmux.LayoutWindow, len(rc.Layout))
 				for i, w := range rc.Layout {
-					commands[i] = w.Command
+					windows[i] = tmux.LayoutWindow{Name: w.Name, Command: w.Command}
 				}
 
-				if err := tmux.ApplyLayout(sessionName, wtPath, commands); err != nil {
+				if err := tmux.ApplyLayout(sessionName, wtPath, windows); err != nil {
 					return err
 				}
 			}

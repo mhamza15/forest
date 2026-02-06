@@ -104,23 +104,46 @@ func KillSession(name string) error {
 	return nil
 }
 
+// LayoutWindow describes a single window in a tmux session layout.
+type LayoutWindow struct {
+	// Name is the tmux window title. Empty uses the tmux default.
+	Name string
+
+	// Command is the shell command to run. Empty opens a plain shell.
+	Command string
+}
+
 // NewWindow creates a new window in the named session with its working
-// directory set to workdir. If command is non-empty, it is sent to the
-// window as keystrokes followed by Enter.
-func NewWindow(session, workdir, command string) error {
-	cmd := exec.Command(
-		"tmux", "new-window",
-		"-t", session,
-		"-c", workdir,
-	)
+// directory set to workdir. If name is non-empty, the window is given
+// that title. If command is non-empty, it is sent as keystrokes.
+func NewWindow(session, workdir string, w LayoutWindow) error {
+	args := []string{"new-window", "-t", session, "-c", workdir}
+
+	if w.Name != "" {
+		args = append(args, "-n", w.Name)
+	}
+
+	cmd := exec.Command("tmux", args...)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("tmux new-window: %s: %w", strings.TrimSpace(string(output)), err)
 	}
 
-	if command != "" {
-		return SendKeys(session, command)
+	if w.Command != "" {
+		return SendKeys(session, w.Command)
+	}
+
+	return nil
+}
+
+// RenameWindow renames the current window of the named session.
+func RenameWindow(session, name string) error {
+	cmd := exec.Command("tmux", "rename-window", "-t", session, name)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("tmux rename-window: %s: %w", strings.TrimSpace(string(output)), err)
 	}
 
 	return nil
@@ -140,27 +163,35 @@ func SendKeys(session, command string) error {
 }
 
 // ApplyLayout creates tmux windows for the given layout in the named
-// session. The first command is sent to the session's initial window;
-// subsequent commands each create a new window. An empty string opens
-// a plain shell. workdir is the working directory for all windows.
-func ApplyLayout(session, workdir string, commands []string) error {
-	for i, cmd := range commands {
+// session. The first entry's command is sent to the session's initial
+// window (and it is renamed if a name is given). Subsequent entries
+// each create a new window. workdir is the working directory for all
+// windows.
+func ApplyLayout(session, workdir string, windows []LayoutWindow) error {
+	for i, w := range windows {
 		if i == 0 {
-			if cmd != "" {
-				if err := SendKeys(session, cmd); err != nil {
+			if w.Name != "" {
+				if err := RenameWindow(session, w.Name); err != nil {
 					return err
 				}
 			}
+
+			if w.Command != "" {
+				if err := SendKeys(session, w.Command); err != nil {
+					return err
+				}
+			}
+
 			continue
 		}
 
-		if err := NewWindow(session, workdir, cmd); err != nil {
+		if err := NewWindow(session, workdir, w); err != nil {
 			return err
 		}
 	}
 
 	// Select the first window so the user lands there on attach.
-	if len(commands) > 1 {
+	if len(windows) > 1 {
 		_ = exec.Command("tmux", "select-window", "-t", session+":0").Run()
 	}
 

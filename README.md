@@ -72,8 +72,10 @@ branch: main
 # Default tmux window layout for new sessions.
 # Each entry creates a window. The first runs in the initial window.
 layout:
-  - command: nvim
-  - command: ""    # plain shell
+  - name: editor
+    command: nvim
+  - name: shell
+    command: ""    # plain shell
 ```
 
 Per-project configs live at `~/.config/forest/projects/<name>.yaml` and can override any global setting:
@@ -90,8 +92,10 @@ copy:
 
 # Project-specific layout (overrides global layout entirely).
 layout:
-  - command: nvim
-  - command: go test ./...
+  - name: editor
+    command: nvim
+  - name: test
+    command: go test ./...
   - command: ""
 ```
 
