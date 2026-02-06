@@ -42,7 +42,7 @@ tmux session.`,
 
 func init() {
 	rootCmd.Version = Version
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "V", false, "enable debug logging")
+	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "enable debug logging")
 
 	rootCmd.AddCommand(configcmd.Command())
 	rootCmd.AddCommand(projectcmd.Command())
