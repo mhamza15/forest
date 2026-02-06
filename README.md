@@ -130,12 +130,14 @@ worktree_dir: ~/.local/share/forest/worktrees
 branch: main
 
 # Default tmux window layout for new sessions.
-# Each entry creates a window. The first runs in the initial window.
+# Each entry creates a window.
 layout:
+  - name: code
+    command: opencode
   - name: editor
     command: nvim
   - name: shell
-    command: ""    # plain shell
+    command: ""
 ```
 
 Per-project configs live at `~/.config/forest/projects/<name>.yaml` and can override any global setting:
@@ -154,11 +156,12 @@ copy:
 
 # Project-specific layout (overrides global layout entirely).
 layout:
+  - name: code
+    command: opencode
   - name: editor
     command: nvim
-  - name: test
-    command: go test ./...
-  - command: ""
+  - name: shell
+    command: ""
 ```
 
 ## Shell completions
