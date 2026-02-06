@@ -15,6 +15,10 @@
       "description": "Default branch to base new worktrees on.",
       "default": "main"
     },
+    "projects_dir": {
+      "type": "string",
+      "description": "Default directory that your projects live in. Used as starting point in project add directory picker. Supports ~ for home directory."
+    },
     "layout": {
       "type": "array",
       "description": "Default tmux window layout for new sessions. Each entry creates a window. The first entry runs in the initial window.",

@@ -29,6 +29,10 @@ type GlobalConfig struct {
 	// Branch is the default base branch for new worktrees.
 	Branch string `yaml:"branch"`
 
+	// ProjectsDir is the starting directory for the project add file
+	// picker. When empty, the current working directory is used.
+	ProjectsDir string `yaml:"projects_dir,omitempty"`
+
 	// Layout defines the tmux windows to create for each new session.
 	Layout []Window `yaml:"layout,omitempty"`
 }
@@ -69,6 +73,10 @@ func LoadGlobal() (GlobalConfig, error) {
 
 	cfg.WorktreeDir = ExpandPath(cfg.WorktreeDir)
 
+	if cfg.ProjectsDir != "" {
+		cfg.ProjectsDir = ExpandPath(cfg.ProjectsDir)
+	}
+
 	return cfg, nil
 }
 
@@ -94,6 +102,10 @@ worktree_dir: ~/.local/share/forest/worktrees
 
 # Default branch to base new worktrees on (default: main)
 branch: main
+
+# Default directory that your projects live in. Used as starting
+# point in ` + "`" + `project add` + "`" + ` directory picker. Example: ~/dev.
+# projects_dir:
 `
 
 	if err := os.WriteFile(p, []byte(content), 0o644); err != nil {

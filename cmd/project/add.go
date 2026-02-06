@@ -70,8 +70,14 @@ func registerProject(repoPath string, name string) error {
 func runAddInteractive() error {
 	var name string
 
-	cwd, _ := filepath.Abs(".")
-	repoPath := cwd
+	startDir, _ := filepath.Abs(".")
+
+	global, err := config.LoadGlobal()
+	if err == nil && global.ProjectsDir != "" {
+		startDir = global.ProjectsDir
+	}
+
+	repoPath := startDir
 
 	fmt.Println()
 
@@ -83,7 +89,7 @@ func runAddInteractive() error {
 	km.FilePicker.Open.SetEnabled(true)
 	km.FilePicker.Back.SetEnabled(true)
 
-	err := huh.NewForm(
+	err = huh.NewForm(
 		huh.NewGroup(
 			huh.NewFilePicker().
 				Title("Repository path").
@@ -93,7 +99,7 @@ func runAddInteractive() error {
 				ShowHidden(false).
 				ShowPermissions(false).
 				Height(5).
-				CurrentDirectory(cwd).
+				CurrentDirectory(startDir).
 				Picking(true).
 				Value(&repoPath),
 
