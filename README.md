@@ -141,4 +141,4 @@ Project names and branch names complete dynamically.
 ## Global flags
 
 - `--verbose` -- enable debug logging
-- `--version` -- print version
+- `-v, --version` -- print version
