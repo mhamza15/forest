@@ -34,40 +34,90 @@ forest tree
 
 ## Commands
 
+```
+$ forest --help
+Forest is a CLI tool for managing git worktrees and tmux sessions.
+
+It simplifies the workflow of creating and managing multiple working
+copies of a repository, each in its own directory with a dedicated
+tmux session.
+
+Usage:
+  forest [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  config      Open configuration in your editor
+  help        Help about any command
+  project     Manage projects
+  session     Manage tmux sessions
+  tree        Manage and browse worktrees
+
+Flags:
+  -h, --help      help for forest
+      --verbose   enable debug logging
+  -v, --version   version for forest
+
+Use "forest [command] --help" for more information about a command.
+```
+
 ### Projects
 
 ```
-forest project add <path> [--name <name>]   Register a git repo as a project
-forest project add                           Interactive mode with file picker
-forest project remove <project>              Unregister a project
-forest project list                          List all registered projects
+$ forest project --help
+Register, list, and manage forest projects.
+
+Usage:
+  forest project [command]
+
+Available Commands:
+  add         Register a new project
+  list        List registered projects
+  remove      Unregister a project
 ```
 
 ### Worktrees
 
 ```
-forest tree add <project> <branch>           Create worktree + tmux session
-forest tree remove <project> <branch>        Remove worktree + tmux session
-forest tree remove <project> <branch> [-f|--force]
-                                             Remove even with uncommitted changes
-forest tree list [project]                   List worktrees, optionally filtered
-forest tree                                  Interactive tree browser
+$ forest tree --help
+Create, remove, and browse worktrees. Run without a subcommand
+to open the interactive tree browser.
+
+Usage:
+  forest tree [flags]
+  forest tree [command]
+
+Available Commands:
+  add         Create a new worktree and tmux session
+  list        List worktrees for one or all projects
+  remove      Remove a worktree and its tmux session
 ```
 
-The interactive tree browser supports vim keybindings (`j`/`k`, `ctrl+n`/`ctrl+p`, arrows), `enter`/`l` to open, `tab` to expand/collapse, `d` to delete, `n` to create a new tree, `?` to toggle help, and `q` to quit.
+The interactive tree browser (`forest tree`) supports vim keybindings (`j`/`k`, `ctrl+n`/`ctrl+p`, arrows), `enter`/`l` to open, `tab` to expand/collapse, `d` to delete, `n` to create a new tree, `?` to toggle help, and `q` to quit.
 
 ### Sessions
 
 ```
-forest session list                          List active tmux sessions
-forest session kill <project> <branch>       Kill a tmux session
+$ forest session --help
+Manage tmux sessions without affecting worktrees.
+
+Usage:
+  forest session [command]
+
+Available Commands:
+  kill        Kill a tmux session without removing its worktree
+  list        List active tmux sessions
 ```
 
 ### Configuration
 
 ```
-forest config                                Open global config in $EDITOR
-forest config <project>                      Open project config in $EDITOR
+$ forest config --help
+Opens the global config in $EDITOR. If a project name is given,
+opens that project's config instead.
+
+Usage:
+  forest config [project] [flags]
 ```
 
 ## Configuration
@@ -138,7 +188,4 @@ Project names and branch names complete dynamically.
 - git
 - tmux
 
-## Global flags
 
-- `--verbose` -- enable debug logging
-- `-v, --version` -- print version
