@@ -13,6 +13,7 @@ import (
 
 	configcmd "github.com/mhamza15/forest/cmd/config"
 	projectcmd "github.com/mhamza15/forest/cmd/project"
+	sessioncmd "github.com/mhamza15/forest/cmd/session"
 	treecmd "github.com/mhamza15/forest/cmd/tree"
 )
 
@@ -41,6 +42,7 @@ func init() {
 
 	rootCmd.AddCommand(configcmd.Command())
 	rootCmd.AddCommand(projectcmd.Command())
+	rootCmd.AddCommand(sessioncmd.Command())
 	rootCmd.AddCommand(treecmd.Command())
 }
 
