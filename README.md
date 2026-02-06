@@ -14,19 +14,21 @@ go install github.com/mhamza15/forest@latest
 
 ## Quick start
 
-Register a project:
+First, register a git repository as a project:
 
 ```
 forest project add ~/dev/myapp
 ```
 
-Create a worktree and open it in a tmux session:
+Next, create a worktree and tmux session for a branch:
 
 ```
 forest tree add myapp feature/login
 ```
 
-Browse all projects and worktrees interactively:
+This creates a worktree at `~/.local/share/forest/worktrees/myapp/feature-login`, starts a tmux session named `myapp-feature-login`, and switches to it.
+
+To browse all projects and their worktrees interactively:
 
 ```
 forest tree
