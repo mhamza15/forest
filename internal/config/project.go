@@ -17,6 +17,7 @@ type ProjectConfig struct {
 	WorktreeDir string   `yaml:"worktree_dir,omitempty"`
 	Branch      string   `yaml:"branch,omitempty"`
 	Copy        []string `yaml:"copy,omitempty"`
+	Layout      []Window `yaml:"layout,omitempty"`
 }
 
 // ResolvedConfig is the final configuration for a project after merging
@@ -27,6 +28,7 @@ type ResolvedConfig struct {
 	WorktreeDir string
 	Branch      string
 	Copy        []string
+	Layout      []Window
 }
 
 // LoadProject reads a project config file by name.
@@ -91,12 +93,18 @@ func Resolve(name string) (ResolvedConfig, error) {
 		return ResolvedConfig{}, err
 	}
 
+	layout := global.Layout
+	if len(proj.Layout) > 0 {
+		layout = proj.Layout
+	}
+
 	rc := ResolvedConfig{
 		Name:        name,
 		Repo:        proj.Repo,
 		WorktreeDir: global.WorktreeDir,
 		Branch:      global.Branch,
 		Copy:        proj.Copy,
+		Layout:      layout,
 	}
 
 	if proj.WorktreeDir != "" {

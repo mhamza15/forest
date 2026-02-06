@@ -10,11 +10,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Window describes a tmux window to create as part of a session layout.
+type Window struct {
+	Command string `yaml:"command"`
+}
+
 // GlobalConfig holds the top-level forest configuration.
 // It is stored at $XDG_CONFIG_HOME/forest/config.yaml.
 type GlobalConfig struct {
-	WorktreeDir string `yaml:"worktree_dir"`
-	Branch      string `yaml:"branch"`
+	WorktreeDir string   `yaml:"worktree_dir"`
+	Branch      string   `yaml:"branch"`
+	Layout      []Window `yaml:"layout,omitempty"`
 }
 
 const (
