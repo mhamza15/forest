@@ -13,9 +13,10 @@ import (
 // ProjectConfig holds per-project overrides. Empty fields fall through
 // to the global config during resolution.
 type ProjectConfig struct {
-	Repo        string `yaml:"repo"`
-	WorktreeDir string `yaml:"worktree_dir,omitempty"`
-	Branch      string `yaml:"branch,omitempty"`
+	Repo        string   `yaml:"repo"`
+	WorktreeDir string   `yaml:"worktree_dir,omitempty"`
+	Branch      string   `yaml:"branch,omitempty"`
+	Copy        []string `yaml:"copy,omitempty"`
 }
 
 // ResolvedConfig is the final configuration for a project after merging
@@ -25,6 +26,7 @@ type ResolvedConfig struct {
 	Repo        string
 	WorktreeDir string
 	Branch      string
+	Copy        []string
 }
 
 // LoadProject reads a project config file by name.
@@ -94,6 +96,7 @@ func Resolve(name string) (ResolvedConfig, error) {
 		Repo:        proj.Repo,
 		WorktreeDir: global.WorktreeDir,
 		Branch:      global.Branch,
+		Copy:        proj.Copy,
 	}
 
 	if proj.WorktreeDir != "" {
