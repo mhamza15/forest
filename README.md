@@ -76,6 +76,11 @@ Per-project configs live at `~/.config/forest/projects/<name>.yaml` and can over
 repo: /path/to/repo
 worktree_dir: ""   # empty = use global default
 branch: ""         # empty = use global default
+
+# Files to copy from the repo root into each new worktree.
+copy:
+  - .env
+  - config/local.yml
 ```
 
 ## Shell completions
