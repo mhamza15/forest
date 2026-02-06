@@ -111,6 +111,23 @@ func List(repoPath string) ([]Worktree, error) {
 	return parsePorcelain(output), nil
 }
 
+// FindByBranch returns the worktree for the given branch, or nil if
+// no worktree is checked out on that branch.
+func FindByBranch(repoPath, branch string) *Worktree {
+	trees, err := List(repoPath)
+	if err != nil {
+		return nil
+	}
+
+	for _, t := range trees {
+		if t.Branch == branch {
+			return &t
+		}
+	}
+
+	return nil
+}
+
 // parsePorcelain parses the porcelain output of git worktree list.
 // Each worktree block is separated by a blank line. Within a block:
 //

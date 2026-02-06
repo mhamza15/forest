@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"path/filepath"
 
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
@@ -35,7 +34,16 @@ func runRemove(cmd *cobra.Command, args []string) error {
 	}
 
 	sessionName := tmux.SessionName(rc.Name, branch)
-	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
+
+	// Look up the actual worktree path from git rather than constructing
+	// it, so worktrees created before the SafeBranchDir convention or
+	// outside of forest are found correctly.
+	existing := git.FindByBranch(rc.Repo, branch)
+	if existing == nil {
+		return fmt.Errorf("no worktree found for branch %q in project %q", branch, project)
+	}
+
+	wtPath := existing.Path
 
 	if err := tmux.KillSession(sessionName); err != nil {
 		slog.Debug("could not kill tmux session", "session", sessionName, "err", err)

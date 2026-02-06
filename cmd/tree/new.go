@@ -42,12 +42,18 @@ func runNew(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
 	sessionName := tmux.SessionName(rc.Name, branch)
 
-	// If the worktree directory already exists, skip creation and just
-	// ensure the tmux session is running.
-	if _, err := os.Stat(wtPath); err != nil {
+	// Check if a worktree for this branch already exists (at any path,
+	// including paths created before the SafeBranchDir convention).
+	var wtPath string
+
+	if existing := git.FindByBranch(rc.Repo, branch); existing != nil {
+		wtPath = existing.Path
+		fmt.Printf("Worktree %s/%s already exists\n", project, branch)
+	} else {
+		wtPath = filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
+
 		slog.Debug("creating worktree", "path", wtPath, "base", rc.Branch)
 
 		if err := os.MkdirAll(filepath.Dir(wtPath), 0o755); err != nil {
@@ -59,8 +65,6 @@ func runNew(cmd *cobra.Command, args []string) error {
 		}
 
 		fmt.Printf("Created worktree %s/%s\n", project, branch)
-	} else {
-		fmt.Printf("Worktree %s/%s already exists\n", project, branch)
 	}
 
 	if !tmux.SessionExists(sessionName) {
