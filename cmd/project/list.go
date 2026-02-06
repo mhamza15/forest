@@ -14,7 +14,7 @@ import (
 var (
 	projectNameStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#89B4FA"))
 	pathStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#6C7086"))
-	headerStyle      = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#6C7086"))
+	headerStyle      = lipgloss.NewStyle().Bold(true)
 )
 
 func listCmd() *cobra.Command {
