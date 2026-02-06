@@ -25,6 +25,9 @@ func runKill(cmd *cobra.Command, args []string) error {
 
 	sessionName := tmux.SessionName(project, branch)
 
+	// KillSession treats a missing session as a no-op, but kill is
+	// user-initiated so we surface an explicit error instead.
+	// The redundant SessionExists check inside KillSession is harmless.
 	if !tmux.SessionExists(sessionName) {
 		return fmt.Errorf("session %q does not exist", sessionName)
 	}
