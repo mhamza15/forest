@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"runtime/debug"
 	"time"
 
 	"github.com/lmittmann/tint"
@@ -17,8 +18,9 @@ import (
 	treecmd "github.com/mhamza15/forest/cmd/tree"
 )
 
-// Version is set at build time via -ldflags.
-var Version = "dev"
+// version is set at build time via -ldflags. When empty, the version
+// is read from the Go module build info (populated by go install).
+var version = ""
 
 var verbose bool
 
@@ -40,8 +42,20 @@ tmux session.`,
 	},
 }
 
+func resolveVersion() string {
+	if version != "" {
+		return version
+	}
+
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" {
+		return info.Main.Version
+	}
+
+	return "dev"
+}
+
 func init() {
-	rootCmd.Version = Version
+	rootCmd.Version = resolveVersion()
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "enable debug logging")
 
 	rootCmd.AddCommand(configcmd.Command())
