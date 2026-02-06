@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mhamza15/forest/schema/project.schema.json",
+  "title": "Forest Project Configuration",
+  "description": "Per-project configuration for the forest CLI tool. Overrides global settings.",
+  "type": "object",
+  "properties": {
+    "repo": {
+      "type": "string",
+      "description": "Absolute path to the git repository."
+    },
+    "worktree_dir": {
+      "type": "string",
+      "description": "Override the global worktree directory for this project. Supports ~ for home directory. Empty uses the global default."
+    },
+    "branch": {
+      "type": "string",
+      "description": "Override the global base branch for this project. Empty uses the global default."
+    },
+    "copy": {
+      "type": "array",
+      "description": "Files relative to the repo root to copy into each new worktree.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "layout": {
+      "type": "array",
+      "description": "Tmux window layout for this project. Overrides the global layout entirely when set.",
+      "items": {
+        "$ref": "#/$defs/window"
+      }
+    }
+  },
+  "required": ["repo"],
+  "additionalProperties": false,
+  "$defs": {
+    "window": {
+      "type": "object",
+      "description": "A tmux window in the session layout.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Tmux window title. If empty, tmux uses its default."
+        },
+        "command": {
+          "type": "string",
+          "description": "Shell command to run in this window. An empty string opens a plain shell."
+        }
+      },
+      "required": ["command"],
+      "additionalProperties": false
+    }
+  }
+}

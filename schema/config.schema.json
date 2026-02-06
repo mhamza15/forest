@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mhamza15/forest/schema/config.schema.json",
+  "title": "Forest Global Configuration",
+  "description": "Global configuration for the forest CLI tool.",
+  "type": "object",
+  "properties": {
+    "worktree_dir": {
+      "type": "string",
+      "description": "Default directory for storing worktrees. Organized as <worktree_dir>/<project>/<branch>. Supports ~ for home directory.",
+      "default": "~/.local/share/forest/worktrees"
+    },
+    "branch": {
+      "type": "string",
+      "description": "Default branch to base new worktrees on.",
+      "default": "main"
+    },
+    "layout": {
+      "type": "array",
+      "description": "Default tmux window layout for new sessions. Each entry creates a window. The first entry runs in the initial window.",
+      "items": {
+        "$ref": "#/$defs/window"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "window": {
+      "type": "object",
+      "description": "A tmux window in the session layout.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Tmux window title. If empty, tmux uses its default."
+        },
+        "command": {
+          "type": "string",
+          "description": "Shell command to run in this window. An empty string opens a plain shell."
+        }
+      },
+      "required": ["command"],
+      "additionalProperties": false
+    }
+  }
+}
