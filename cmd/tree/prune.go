@@ -3,6 +3,7 @@ package tree
 import (
 	"fmt"
 	"log/slog"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -66,8 +67,16 @@ func runPrune(cmd *cobra.Command, args []string) error {
 			slog.Debug("could not fetch remote branches", "project", name, "err", err)
 		}
 
+		repoPath := filepath.Clean(rc.Repo)
+
 		for _, t := range trees {
 			if t.Bare || t.Branch == "" || t.Branch == rc.Branch {
+				continue
+			}
+
+			// Skip the main working tree. It cannot be removed by
+			// git worktree remove and should never be pruned.
+			if filepath.Clean(t.Path) == repoPath {
 				continue
 			}
 
