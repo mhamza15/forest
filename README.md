@@ -132,8 +132,7 @@ branch: main
 # Default tmux window layout for new sessions.
 # Each entry creates a window.
 layout:
-  - name: code
-    command: opencode
+  - command: opencode
   - name: editor
     command: nvim
   - name: shell
@@ -156,8 +155,7 @@ copy:
 
 # Project-specific layout (overrides global layout entirely).
 layout:
-  - name: code
-    command: opencode
+  - command: opencode
   - name: editor
     command: nvim
   - name: shell
