@@ -6,6 +6,7 @@ It was created to support my development workflow, which involves multiple AI ag
 
 Forest does essentially just that, but in an automated, configurable fashion. It optionally adds a friendly TUI on top of that to hopefully make things easier to manage.
 
+Disclaimer: This tool was created entirely with AI, with minimal direct code review from me. I needed a tool that served a certain purpose, but I also don't have the time to treat it as more mature software project. It's functional, but as you can imagine, there's probably tons of slop all around.
 ## Install
 
 ```
