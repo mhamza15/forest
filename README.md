@@ -7,6 +7,7 @@ It was created to support my development workflow, which involves multiple AI ag
 Forest does essentially just that, but in an automated, configurable fashion. It optionally adds a friendly TUI on top of that to hopefully make things easier to manage.
 
 Disclaimer: This tool was created entirely with AI, with minimal direct code review from me. I needed a tool that served a certain purpose, but I also don't have the time to treat it as more mature software project. It's functional, but as you can imagine, there's probably tons of slop all around.
+
 ## Install
 
 ```
@@ -129,7 +130,7 @@ Global config lives at `$XDG_CONFIG_HOME/forest/config.yaml`, or `~/.config/fore
 
 # Default directory for storing worktrees. Organized as: <worktree_dir>/<project>/<branch>.
 # Defaults to $XDG_DATA_HOME/forest/worktrees, or ~/.local/share/forest/worktrees.
-# worktree_dir:
+worktree_dir: /path/to/worktrees
 
 # Default branch to base new worktrees on.
 branch: main
@@ -155,11 +156,11 @@ repo: /path/to/repo
 
 # The directory to store this project's worktrees. Leave empty or omit
 # to use the global default.
-worktree_dir: ""
+worktree_dir: /path/to/worktrees
 
 # The default branch to base new worktrees on. Leave empty or omit to
 # use the global default.
-branch: ""
+branch: main
 
 # Files to copy from the repo root into each new worktree.
 copy:
