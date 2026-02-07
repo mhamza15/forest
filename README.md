@@ -127,8 +127,9 @@ Global config lives at `$XDG_CONFIG_HOME/forest/config.yaml` (defaults to `~/.co
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/mhamza15/forest/main/internal/config/schema/config.schema.json
 
-# Default directory for storing worktrees. Organized as: <worktree_dir>/<project>/<branch>
-worktree_dir: ~/.local/share/forest/worktrees
+# Default directory for storing worktrees. Organized as: <worktree_dir>/<project>/<branch>.
+# Defaults to $XDG_DATA_HOME/forest/worktrees, or ~/.local/share/forest/worktrees.
+# worktree_dir:
 
 # Default branch to base new worktrees on.
 branch: main

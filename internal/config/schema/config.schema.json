@@ -7,8 +7,7 @@
   "properties": {
     "worktree_dir": {
       "type": "string",
-      "description": "Default directory for storing worktrees. Organized as <worktree_dir>/<project>/<branch>. Supports ~ for home directory.",
-      "default": "~/.local/share/forest/worktrees"
+      "description": "Default directory for storing worktrees. Organized as <worktree_dir>/<project>/<branch>. Supports ~ for home directory. When omitted, defaults to $XDG_DATA_HOME/forest/worktrees, or ~/.local/share/forest/worktrees."
     },
     "branch": {
       "type": "string",

@@ -24,7 +24,9 @@ type Window struct {
 // It is stored at $XDG_CONFIG_HOME/forest/config.yaml.
 type GlobalConfig struct {
 	// WorktreeDir is the base directory for storing worktrees.
-	WorktreeDir string `yaml:"worktree_dir"`
+	// When omitted, defaults to $XDG_DATA_HOME/forest/worktrees,
+	// falling back to ~/.local/share/forest/worktrees.
+	WorktreeDir string `yaml:"worktree_dir,omitempty"`
 
 	// Branch is the default base branch for new worktrees.
 	Branch string `yaml:"branch"`
@@ -97,8 +99,9 @@ func WriteDefaultGlobal() error {
 # Forest global configuration
 
 # Default directory for storing worktrees. Worktrees are organized
-# as: <worktree_dir>/<project>/<branch> (default: ~/.local/share/forest/worktrees/)
-worktree_dir: ~/.local/share/forest/worktrees
+# as: <worktree_dir>/<project>/<branch>.
+# Defaults to $XDG_DATA_HOME/forest/worktrees, or ~/.local/share/forest/worktrees.
+# worktree_dir:
 
 # Default branch to base new worktrees on (default: main)
 branch: main
