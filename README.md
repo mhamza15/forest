@@ -162,6 +162,10 @@ worktree_dir: /path/to/worktrees
 # use the global default.
 branch: main
 
+# Default directory that your projects live in. Used as starting
+# point in ` + "`" + `project add` + "`" + ` directory picker.
+projects_dir: ~/dev
+
 # Files to copy from the repo root into each new worktree.
 copy:
   - .env
