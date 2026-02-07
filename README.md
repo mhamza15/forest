@@ -122,7 +122,7 @@ Usage:
 
 ## Configuration
 
-Global config lives at `$XDG_CONFIG_HOME/forest/config.yaml` (defaults to `~/.config/forest/config.yaml`):
+Global config lives at `$XDG_CONFIG_HOME/forest/config.yaml`, or `~/.config/forest/config.yaml`:
 
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/mhamza15/forest/main/internal/config/schema/config.schema.json
@@ -145,7 +145,7 @@ layout:
     command: ""
 ```
 
-Per-project configs live at `~/.config/forest/projects/<name>.yaml` and can override any global setting:
+Per-project configs live at `$XDG_CONFIG_HOME/forest/projects/<project>.yaml`, or `~/.config/forest/projects/<project>.yaml`. and can override any global setting:
 
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/mhamza15/forest/main/internal/config/schema/project.schema.json
