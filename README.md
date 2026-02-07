@@ -127,19 +127,19 @@ Global config lives at `$XDG_CONFIG_HOME/forest/config.yaml` (defaults to `~/.co
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/mhamza15/forest/main/internal/config/schema/config.schema.json
 
-# Default directory for storing worktrees.
-# Organized as: <worktree_dir>/<project>/<branch>
+# Default directory for storing worktrees. Organized as: <worktree_dir>/<project>/<branch>
 worktree_dir: ~/.local/share/forest/worktrees
 
 # Default branch to base new worktrees on.
 branch: main
 
-# Default tmux window layout for new sessions.
-# Each entry creates a window.
+# Default tmux window layout for new sessions across all projects. Each entry creates a separate window.
 layout:
   - command: opencode
+
   - name: editor
     command: nvim
+
   - name: shell
     command: ""
 ```
@@ -149,20 +149,29 @@ Per-project configs live at `~/.config/forest/projects/<name>.yaml` and can over
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/mhamza15/forest/main/internal/config/schema/project.schema.json
 
+# The path to the repo.
 repo: /path/to/repo
-worktree_dir: ""   # empty = use global default
-branch: ""         # empty = use global default
+
+# The directory to store this project's worktrees. Leave empty or omit
+# to use the global default.
+worktree_dir: ""
+
+# The default branch to base new worktrees on. Leave empty or omit to
+# use the global default.
+branch: ""
 
 # Files to copy from the repo root into each new worktree.
 copy:
   - .env
   - config/local.yml
 
-# Project-specific layout (overrides global layout entirely).
+# Project-specific layout (overrides global layout).
 layout:
   - command: opencode
+
   - name: editor
     command: nvim
+
   - name: shell
     command: ""
 ```
