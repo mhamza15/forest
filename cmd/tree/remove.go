@@ -1,12 +1,13 @@
 package tree
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
-	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/completion"
@@ -50,18 +51,7 @@ func runRemove(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		var confirm bool
-
-		confirmErr := huh.NewConfirm().
-			Title(fmt.Sprintf("Remove worktree %s/%s?", project, branch)).
-			Value(&confirm).
-			Run()
-
-		if confirmErr != nil {
-			return confirmErr
-		}
-
-		if !confirm {
+		if !confirm(fmt.Sprintf("Remove worktree %s/%s? [y/N] ", project, branch)) {
 			return nil
 		}
 
@@ -82,18 +72,7 @@ func runRemove(cmd *cobra.Command, args []string) error {
 
 		fmt.Printf("Worktree %s/%s has modified or untracked files.\n", project, branch)
 
-		var confirm bool
-
-		confirmErr := huh.NewConfirm().
-			Title("Force remove?").
-			Value(&confirm).
-			Run()
-
-		if confirmErr != nil {
-			return confirmErr
-		}
-
-		if !confirm {
+		if !confirm("Force remove? [y/N] ") {
 			return nil
 		}
 
@@ -105,6 +84,17 @@ func runRemove(cmd *cobra.Command, args []string) error {
 	fmt.Printf("Removed worktree %s/%s\n", project, branch)
 
 	return nil
+}
+
+// confirm prints a prompt and returns true if the user types y or yes.
+func confirm(prompt string) bool {
+	fmt.Print(prompt)
+
+	reader := bufio.NewReader(os.Stdin)
+	answer, _ := reader.ReadString('\n')
+	answer = strings.TrimSpace(strings.ToLower(answer))
+
+	return answer == "y" || answer == "yes"
 }
 
 // detectCurrentWorktree figures out which project and branch the
