@@ -64,6 +64,39 @@ func BranchExists(repoPath, branch string) bool {
 	return cmd.Run() == nil
 }
 
+// CurrentBranch returns the branch name checked out in the given
+// directory, or an empty string if it cannot be determined (e.g.
+// detached HEAD or not a git directory).
+func CurrentBranch(dir string) string {
+	cmd := exec.Command("git", "-C", dir, "rev-parse", "--abbrev-ref", "HEAD")
+
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+
+	branch := strings.TrimSpace(string(output))
+
+	if branch == "HEAD" {
+		return ""
+	}
+
+	return branch
+}
+
+// WorktreeRoot returns the root directory of the worktree containing
+// the given directory, or an empty string if it cannot be determined.
+func WorktreeRoot(dir string) string {
+	cmd := exec.Command("git", "-C", dir, "rev-parse", "--show-toplevel")
+
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(string(output))
+}
+
 // IsMerged returns true if the given branch has been merged into the
 // target branch. It uses git merge-base --is-ancestor to check
 // whether the branch's HEAD is an ancestor of the target.

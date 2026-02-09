@@ -3,6 +3,8 @@ package tree
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
@@ -17,9 +19,12 @@ var forceFlag bool
 
 func removeCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:               "remove <project> <branch>",
-		Short:             "Remove a worktree and its tmux session",
-		Args:              cobra.ExactArgs(2),
+		Use:   "remove [project] [branch]",
+		Short: "Remove a worktree and its tmux session",
+		Long: `Remove a worktree and its tmux session. With no arguments, detects
+the current worktree from the working directory and prompts for
+confirmation.`,
+		Args:              cobra.MaximumNArgs(2),
 		RunE:              runRemove,
 		ValidArgsFunction: completion.ProjectThenBranch,
 	}
@@ -30,8 +35,39 @@ func removeCmd() *cobra.Command {
 }
 
 func runRemove(cmd *cobra.Command, args []string) error {
-	project := args[0]
-	branch := args[1]
+	var project, branch string
+
+	switch len(args) {
+	case 2:
+		project = args[0]
+		branch = args[1]
+
+	case 0:
+		var err error
+
+		project, branch, err = detectCurrentWorktree()
+		if err != nil {
+			return err
+		}
+
+		var confirm bool
+
+		confirmErr := huh.NewConfirm().
+			Title(fmt.Sprintf("Remove worktree %s/%s?", project, branch)).
+			Value(&confirm).
+			Run()
+
+		if confirmErr != nil {
+			return confirmErr
+		}
+
+		if !confirm {
+			return nil
+		}
+
+	default:
+		return fmt.Errorf("expected 0 or 2 arguments, got %d", len(args))
+	}
 
 	rc, err := config.Resolve(project)
 	if err != nil {
@@ -44,7 +80,6 @@ func runRemove(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		// Worktree is dirty and --force was not set. Ask interactively.
 		fmt.Printf("Worktree %s/%s has modified or untracked files.\n", project, branch)
 
 		var confirm bool
@@ -70,4 +105,49 @@ func runRemove(cmd *cobra.Command, args []string) error {
 	fmt.Printf("Removed worktree %s/%s\n", project, branch)
 
 	return nil
+}
+
+// detectCurrentWorktree figures out which project and branch the
+// current working directory belongs to by matching the worktree root
+// against registered projects.
+func detectCurrentWorktree() (project string, branch string, err error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", "", fmt.Errorf("getting working directory: %w", err)
+	}
+
+	currentBranch := git.CurrentBranch(cwd)
+	if currentBranch == "" {
+		return "", "", fmt.Errorf("not in a git worktree")
+	}
+
+	wtRoot := git.WorktreeRoot(cwd)
+	if wtRoot == "" {
+		return "", "", fmt.Errorf("could not determine worktree root")
+	}
+
+	names, err := config.ListProjects()
+	if err != nil {
+		return "", "", err
+	}
+
+	for _, name := range names {
+		proj, err := config.LoadProject(name)
+		if err != nil {
+			continue
+		}
+
+		trees, err := git.List(proj.Repo)
+		if err != nil {
+			continue
+		}
+
+		for _, t := range trees {
+			if filepath.Clean(t.Path) == filepath.Clean(wtRoot) {
+				return name, t.Branch, nil
+			}
+		}
+	}
+
+	return "", "", fmt.Errorf("current directory is not a registered forest worktree")
 }
