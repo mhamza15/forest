@@ -113,7 +113,11 @@ func runRemove(cmd *cobra.Command, args []string) error {
 func detectCurrentWorktree() (project string, branch string, err error) {
 	cwd, err := os.Getwd()
 	if err != nil {
-		return "", "", fmt.Errorf("getting working directory: %w", err)
+		return "", "", fmt.Errorf("getting working directory: %w (was this worktree already removed?)", err)
+	}
+
+	if _, statErr := os.Stat(cwd); statErr != nil {
+		return "", "", fmt.Errorf("current directory no longer exists (was this worktree already removed?)")
 	}
 
 	currentBranch := git.CurrentBranch(cwd)
