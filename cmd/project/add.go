@@ -2,6 +2,8 @@ package project
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -10,17 +12,31 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/config"
+	"github.com/mhamza15/forest/internal/forest"
+	"github.com/mhamza15/forest/internal/git"
+	"github.com/mhamza15/forest/internal/github"
+	"github.com/mhamza15/forest/internal/tmux"
 )
 
 var nameFlag string
 
 func addCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add [path]",
+		Use:   "add [path | github-url]",
 		Short: "Register a new project",
-		Long:  "Register a git repository as a forest project. If no path is given, an interactive prompt is shown.",
-		Args:  cobra.MaximumNArgs(1),
-		RunE:  runAdd,
+		Long: `Register a git repository as a forest project.
+
+If no path is given, an interactive prompt is shown.
+
+A GitHub repository URL may be passed instead of a local path:
+
+  forest project add https://github.com/owner/repo
+
+The repository is cloned into the current directory (or projects_dir
+if configured), registered as a project, and the default branch is
+opened in a tmux session.`,
+		Args: cobra.MaximumNArgs(1),
+		RunE: runAdd,
 	}
 
 	cmd.Flags().StringVar(&nameFlag, "name", "", "project name (defaults to repo directory name)")
@@ -33,6 +49,9 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		return runAddInteractive()
 	}
 
+	if github.IsGitHubURL(args[0]) {
+		return runAddFromGitHub(args[0], nameFlag)
+	}
 	return registerProject(args[0], nameFlag)
 }
 
@@ -63,6 +82,83 @@ func registerProject(repoPath string, name string) error {
 	fmt.Printf("Registered project %q (%s)\n", name, absPath)
 
 	return nil
+}
+
+// runAddFromGitHub clones a GitHub repository, registers it as a
+// project, and opens the default branch in a tmux session.
+func runAddFromGitHub(rawURL, name string) error {
+	info, err := github.ParseRepoURL(rawURL)
+	if err != nil {
+		return err
+	}
+
+	if name == "" {
+		name = info.Repo
+	}
+
+	// Clone into projects_dir if configured, otherwise the current directory.
+	baseDir, _ := filepath.Abs(".")
+
+	if global, err := config.LoadGlobal(); err == nil && global.ProjectsDir != "" {
+		baseDir = global.ProjectsDir
+	}
+
+	dest := filepath.Join(baseDir, name)
+
+	if err := os.MkdirAll(baseDir, 0o755); err != nil {
+		return fmt.Errorf("creating projects directory: %w", err)
+	}
+
+	fmt.Printf("Cloning %s/%s into %s\n", info.Owner, info.Repo, dest)
+
+	if err := git.Clone(info.CloneURL, dest); err != nil {
+		return err
+	}
+
+	absPath, err := filepath.Abs(dest)
+	if err != nil {
+		return fmt.Errorf("resolving path: %w", err)
+	}
+
+	cfg := config.ProjectConfig{
+		Repo: absPath,
+	}
+
+	if err := config.SaveProject(name, cfg); err != nil {
+		return err
+	}
+
+	fmt.Printf("Registered project %q (%s)\n", name, absPath)
+
+	// Detect the default branch of the freshly cloned repo.
+	branch, err := git.DefaultBranch(absPath)
+	if err != nil {
+		return err
+	}
+
+	rc, err := config.Resolve(name)
+	if err != nil {
+		return err
+	}
+
+	// Open a tmux session if tmux is running.
+	if err := tmux.RequireRunning(); err != nil {
+		slog.Debug("tmux not running, skipping session", "err", err)
+		return nil
+	}
+
+	result, err := forest.AddTree(rc, branch)
+	if err != nil {
+		return err
+	}
+
+	if err := forest.OpenSession(rc, branch, result.WorktreePath); err != nil {
+		return err
+	}
+
+	slog.Debug("switching to tmux session", "session", result.SessionName)
+
+	return tmux.SwitchTo(result.SessionName)
 }
 
 // runAddInteractive prompts the user for repo path and project name

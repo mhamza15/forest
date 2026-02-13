@@ -73,3 +73,69 @@ func TestParseLink_QueryAndFragment(t *testing.T) {
 	assert.Equal(t, KindPR, link.Kind)
 	assert.Equal(t, 55, link.Number)
 }
+
+func TestIsGitHubURL(t *testing.T) {
+	tests := []struct {
+		name string
+		url  string
+		want bool
+	}{
+		{name: "https repo URL", url: "https://github.com/owner/repo", want: true},
+		{name: "https with .git", url: "https://github.com/owner/repo.git", want: true},
+		{name: "issue URL", url: "https://github.com/owner/repo/issues/42", want: true},
+		{name: "gitlab host", url: "https://gitlab.com/owner/repo", want: false},
+		{name: "ssh URL", url: "git@github.com:owner/repo.git", want: false},
+		{name: "local path", url: "/local/path", want: false},
+		{name: "nwo shorthand", url: "owner/repo", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, IsGitHubURL(tt.url))
+		})
+	}
+}
+
+func TestParseRepoURL(t *testing.T) {
+	tests := []struct {
+		name      string
+		url       string
+		wantOwner string
+		wantRepo  string
+	}{
+		{name: "plain URL", url: "https://github.com/acme/widgets", wantOwner: "acme", wantRepo: "widgets"},
+		{name: "with .git", url: "https://github.com/acme/widgets.git", wantOwner: "acme", wantRepo: "widgets"},
+		{name: "trailing slash", url: "https://github.com/acme/widgets/", wantOwner: "acme", wantRepo: "widgets"},
+		{name: "issue URL", url: "https://github.com/acme/widgets/issues/42", wantOwner: "acme", wantRepo: "widgets"},
+		{name: "PR with extra path", url: "https://github.com/acme/widgets/pull/99/files", wantOwner: "acme", wantRepo: "widgets"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			info, err := ParseRepoURL(tt.url)
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.wantOwner, info.Owner)
+			assert.Equal(t, tt.wantRepo, info.Repo)
+			assert.Equal(t, "https://github.com/acme/widgets.git", info.CloneURL)
+		})
+	}
+}
+
+func TestParseRepoURL_Errors(t *testing.T) {
+	tests := []struct {
+		name string
+		url  string
+	}{
+		{name: "wrong host", url: "https://gitlab.com/acme/widgets"},
+		{name: "missing repo", url: "https://github.com/acme"},
+		{name: "empty path", url: "https://github.com/"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ParseRepoURL(tt.url)
+			assert.Error(t, err)
+		})
+	}
+}

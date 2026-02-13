@@ -92,6 +92,58 @@ func ParseLink(raw string) (Link, error) {
 	}, nil
 }
 
+// IsGitHubURL returns true if the string looks like a GitHub URL.
+func IsGitHubURL(s string) bool {
+	return strings.HasPrefix(s, "https://github.com/")
+}
+
+// RepoInfo holds the owner and repository name parsed from a GitHub URL.
+type RepoInfo struct {
+	// Owner is the repository owner (user or organization).
+	Owner string
+
+	// Repo is the repository name.
+	Repo string
+
+	// CloneURL is the HTTPS clone URL for the repository.
+	CloneURL string
+}
+
+// ParseRepoURL extracts the owner and repository name from a GitHub URL.
+// It accepts plain repository URLs as well as issue or PR URLs,
+// stripping extra path segments beyond owner/repo.
+//
+// Accepted formats:
+//
+//	https://github.com/owner/repo
+//	https://github.com/owner/repo.git
+//	https://github.com/owner/repo/issues/42
+//	https://github.com/owner/repo/pull/99
+func ParseRepoURL(raw string) (RepoInfo, error) {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return RepoInfo{}, fmt.Errorf("parsing URL: %w", err)
+	}
+
+	if u.Host != "github.com" {
+		return RepoInfo{}, fmt.Errorf("unsupported host %q, expected github.com", u.Host)
+	}
+
+	parts := strings.Split(strings.Trim(u.Path, "/"), "/")
+	if len(parts) < 2 || parts[0] == "" || parts[1] == "" {
+		return RepoInfo{}, fmt.Errorf("cannot parse owner/repo from %q", raw)
+	}
+
+	owner := parts[0]
+	repo := strings.TrimSuffix(parts[1], ".git")
+
+	return RepoInfo{
+		Owner:    owner,
+		Repo:     repo,
+		CloneURL: fmt.Sprintf("https://github.com/%s/%s.git", owner, repo),
+	}, nil
+}
+
 // PRHead holds the head branch information for a pull request,
 // including the fork's clone URL when the PR comes from a fork.
 type PRHead struct {
