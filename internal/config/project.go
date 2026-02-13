@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/mhamza15/forest/internal/git"
 )
 
 // ProjectConfig holds per-project overrides. Empty fields fall through
@@ -138,6 +140,40 @@ func Resolve(name string) (ResolvedConfig, error) {
 	}
 
 	return rc, nil
+}
+
+// FindProjectByRemote finds a registered project that has any remote
+// matching the given "owner/repo" string.
+func FindProjectByRemote(nwo string) (string, ResolvedConfig, error) {
+	names, err := ListProjects()
+	if err != nil {
+		return "", ResolvedConfig{}, err
+	}
+
+	for _, name := range names {
+		rc, err := Resolve(name)
+		if err != nil {
+			continue
+		}
+
+		remotes, err := git.Remotes(rc.Repo)
+		if err != nil {
+			continue
+		}
+
+		for _, remote := range remotes {
+			raw, err := git.RemoteURL(rc.Repo, remote)
+			if err != nil {
+				continue
+			}
+
+			if git.NormalizeRemoteURL(raw) == nwo {
+				return name, rc, nil
+			}
+		}
+	}
+
+	return "", ResolvedConfig{}, fmt.Errorf("no project found with remote matching %q", nwo)
 }
 
 // ListProjects returns the names of all registered projects by scanning
