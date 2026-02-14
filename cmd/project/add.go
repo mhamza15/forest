@@ -141,12 +141,6 @@ func runAddFromGitHub(rawURL, name string) error {
 		return err
 	}
 
-	// Open a tmux session if tmux is running.
-	if err := tmux.RequireRunning(); err != nil {
-		slog.Debug("tmux not running, skipping session", "err", err)
-		return nil
-	}
-
 	result, err := forest.AddTree(rc, branch)
 	if err != nil {
 		return err

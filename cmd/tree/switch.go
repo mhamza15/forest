@@ -28,11 +28,6 @@ with the configured layout. Does not create new worktrees.`,
 func runSwitch(cmd *cobra.Command, args []string) error {
 	project := args[0]
 	branch := args[1]
-
-	if err := tmux.RequireRunning(); err != nil {
-		return err
-	}
-
 	rc, err := config.Resolve(project)
 	if err != nil {
 		return err

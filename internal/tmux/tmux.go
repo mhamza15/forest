@@ -50,13 +50,27 @@ func NewSession(name, workdir string) error {
 	return nil
 }
 
-// SwitchTo switches the current tmux client to the named session.
+// SwitchTo moves the user to the named tmux session. Inside tmux it
+// switches the current client; outside tmux it attaches interactively.
 func SwitchTo(name string) error {
-	cmd := exec.Command("tmux", "switch-client", "-t", name)
+	if IsRunning() {
+		cmd := exec.Command("tmux", "switch-client", "-t", name)
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("tmux switch-client: %s: %w", strings.TrimSpace(string(output)), err)
+		}
 
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("tmux switch-client: %s: %w", strings.TrimSpace(string(output)), err)
+		return nil
+	}
+
+	// Not inside tmux. Attach to the session so the user lands in it.
+	cmd := exec.Command("tmux", "attach-session", "-t", name)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("tmux attach-session: %w", err)
 	}
 
 	return nil

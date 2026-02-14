@@ -373,10 +373,6 @@ func (m Model) openSelected() (tea.Model, tea.Cmd) {
 	wtPath := p.trees[ti].Path
 
 	m.action = func() error {
-		if err := tmux.RequireRunning(); err != nil {
-			return err
-		}
-
 		rc, err := config.Resolve(p.name)
 		if err != nil {
 			return err

@@ -50,10 +50,6 @@ func isGitHubLink(s string) bool {
 }
 
 func runAdd(cmd *cobra.Command, args []string) error {
-	if err := tmux.RequireRunning(); err != nil {
-		return err
-	}
-
 	var (
 		project string
 		branch  string
