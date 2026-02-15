@@ -27,6 +27,10 @@ type ProjectConfig struct {
 	// Copy lists files relative to the repo root to copy into each new worktree.
 	Copy []string `yaml:"copy,omitempty"`
 
+	// Symlink lists files relative to the repo root to symlink into each new worktree.
+	// Unlike copy, symlinked files reference the original in the repo root directly.
+	Symlink []string `yaml:"symlink,omitempty"`
+
 	// Layout overrides the global tmux window layout for this project.
 	Layout []Window `yaml:"layout,omitempty"`
 }
@@ -48,6 +52,9 @@ type ResolvedConfig struct {
 
 	// Copy lists files to copy from the repo root into each new worktree.
 	Copy []string
+
+	// Symlink lists files to symlink from the repo root into each new worktree.
+	Symlink []string
 
 	// Layout defines the tmux windows to create for each new session.
 	Layout []Window
@@ -128,6 +135,7 @@ func Resolve(name string) (ResolvedConfig, error) {
 		WorktreeDir: global.WorktreeDir,
 		Branch:      global.Branch,
 		Copy:        proj.Copy,
+		Symlink:     proj.Symlink,
 		Layout:      layout,
 	}
 

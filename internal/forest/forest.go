@@ -28,6 +28,10 @@ type AddTreeResult struct {
 	// CopyWarnings contains any warnings generated while copying
 	// files into the new worktree.
 	CopyWarnings []string
+
+	// SymlinkWarnings contains any warnings generated while symlinking
+	// files into the new worktree.
+	SymlinkWarnings []string
 }
 
 // AddTree creates a worktree for the given project and branch. If the
@@ -65,6 +69,10 @@ func AddTree(rc config.ResolvedConfig, branch string) (AddTreeResult, error) {
 
 	if len(rc.Copy) > 0 {
 		result.CopyWarnings = git.CopyFiles(rc.Repo, wtPath, rc.Copy)
+	}
+
+	if len(rc.Symlink) > 0 {
+		result.SymlinkWarnings = git.SymlinkFiles(rc.Repo, wtPath, rc.Symlink)
 	}
 
 	return result, nil
