@@ -49,6 +49,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Show help for unknown subcommands but not for runtime errors.
 - Make `worktree_dir` optional with XDG default and fallback.
 
+### Removed
+
+- Remove `tint` and `go-isatty` dependencies from debug logging handler.
+
 ### Fixed
 
 - Skip fork fetch when branch already exists locally.

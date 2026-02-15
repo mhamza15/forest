@@ -134,7 +134,7 @@ func runAdd(cmd *cobra.Command, args []string) error {
 
 ### Logging
 
-- `log/slog` with `tint` handler for colored output.
+- `log/slog` with the standard `TextHandler` writing to stderr.
 - Debug-level only, gated behind `--verbose` flag.
 - Pattern: `slog.Debug("message", "key", value, "key2", value2)`
 

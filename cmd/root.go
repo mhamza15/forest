@@ -6,16 +6,12 @@ import (
 	"log/slog"
 	"os"
 	"runtime/debug"
-	"time"
-
-	"github.com/lmittmann/tint"
-	"github.com/mattn/go-isatty"
-	"github.com/spf13/cobra"
 
 	configcmd "github.com/mhamza15/forest/cmd/config"
 	projectcmd "github.com/mhamza15/forest/cmd/project"
 	sessioncmd "github.com/mhamza15/forest/cmd/session"
 	treecmd "github.com/mhamza15/forest/cmd/tree"
+	"github.com/spf13/cobra"
 )
 
 // version is set at build time via -ldflags. When empty, the version
@@ -83,12 +79,8 @@ func initLogging() {
 		level = slog.LevelDebug
 	}
 
-	w := os.Stderr
-
-	handler := tint.NewHandler(w, &tint.Options{
-		Level:      level,
-		TimeFormat: time.Kitchen,
-		NoColor:    !isatty.IsTerminal(w.Fd()),
+	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: level,
 	})
 
 	slog.SetDefault(slog.New(handler))
