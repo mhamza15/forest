@@ -15,7 +15,10 @@ import (
 	"github.com/mhamza15/forest/internal/tmux"
 )
 
-var baseBranchFlag string
+var (
+	baseBranchFlag string
+	noSessionFlag  bool
+)
 
 func addCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -49,6 +52,7 @@ func addCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&baseBranchFlag, "branch", "b", "", "base branch for the new worktree (overrides project config)")
+	cmd.Flags().BoolVar(&noSessionFlag, "no-session", false, "create worktree without opening a tmux session")
 
 	return cmd
 }
@@ -127,12 +131,14 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		fmt.Println(w)
 	}
 
+	if noSessionFlag {
+		return nil
+	}
 	if err := forest.OpenSession(rc, branch, result.WorktreePath); err != nil {
 		return err
 	}
 
 	slog.Debug("switching to tmux session", slog.String("session", result.SessionName))
-
 	return tmux.SwitchTo(result.SessionName)
 }
 
