@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Symlink files from repo root into new worktrees via `symlink` project config field.
 - `--project` / `-p` flag to override project on any command; project is inferred from working directory when omitted.
+- `--branch` / `-b` flag on `tree add` to override the base branch for a new worktree.
 - Attach to existing tmux session when invoked outside tmux.
 - Support GitHub URLs in `project add` to register a project by repository URL.
 - Support GitHub issue and pull request URLs in `tree add` to create worktrees directly from links.

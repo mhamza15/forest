@@ -15,8 +15,10 @@ import (
 	"github.com/mhamza15/forest/internal/tmux"
 )
 
+var baseBranchFlag string
+
 func addCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "add {<branch> | <github-link>}",
 		Short: "Create a new worktree and tmux session",
 		Long: "Create a new git worktree for the project and open it in a tmux session.\n" +
@@ -27,7 +29,7 @@ func addCmd() *cobra.Command {
 			"\n" +
 			"If the worktree already exists, the command switches to the existing\n" +
 			"tmux session instead. The new branch is based on the project's configured\n" +
-			"base branch, falling back to the global default.\n" +
+			"base branch, falling back to the global default. Use --branch to override.\n" +
 			"\n" +
 			"A GitHub issue or pull request URL may be passed instead of a branch:\n" +
 			"\n" +
@@ -45,6 +47,10 @@ func addCmd() *cobra.Command {
 		RunE:              runAdd,
 		ValidArgsFunction: completion.Branches,
 	}
+
+	cmd.Flags().StringVarP(&baseBranchFlag, "branch", "b", "", "base branch for the new worktree (overrides project config)")
+
+	return cmd
 }
 
 // isGitHubLink returns true if the argument looks like a GitHub URL
@@ -67,29 +73,39 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+
 		name, resolved, err := config.FindProjectByRemote(link.NWO())
 		if err != nil {
 			return err
 		}
+
 		project = name
 		rc = resolved
+
 		branch, err = resolveLinkBranch(link, rc.Repo)
 		if err != nil {
 			return err
 		}
 	} else {
 		branch = args[0]
+
 		var err error
+
 		project, err = resolveProject(projectFlag)
 		if err != nil {
 			return err
 		}
+
 		resolved, err := config.Resolve(project)
 		if err != nil {
 			return err
 		}
 
 		rc = resolved
+	}
+
+	if baseBranchFlag != "" {
+		rc.Branch = baseBranchFlag
 	}
 
 	result, err := forest.AddTree(rc, branch)
