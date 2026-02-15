@@ -20,14 +20,14 @@ var forceFlag bool
 
 func removeCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "remove [project] [branch]",
+		Use:   "remove [branch]",
 		Short: "Remove a worktree and its tmux session",
 		Long: `Remove a worktree and its tmux session. With no arguments, detects
 the current worktree from the working directory and prompts for
 confirmation.`,
-		Args:              cobra.MaximumNArgs(2),
+		Args:              cobra.MaximumNArgs(1),
 		RunE:              runRemove,
-		ValidArgsFunction: completion.ProjectThenBranch,
+		ValidArgsFunction: completion.Branches,
 	}
 
 	cmd.Flags().BoolVarP(&forceFlag, "force", "f", false, "force removal of dirty worktrees")
@@ -38,10 +38,18 @@ confirmation.`,
 func runRemove(cmd *cobra.Command, args []string) error {
 	var project, branch string
 
+	projectFlag, _ := cmd.Flags().GetString("project")
+
 	switch len(args) {
-	case 2:
-		project = args[0]
-		branch = args[1]
+	case 1:
+		branch = args[0]
+
+		var err error
+
+		project, err = resolveProject(projectFlag)
+		if err != nil {
+			return err
+		}
 
 	case 0:
 		var err error
@@ -54,9 +62,6 @@ func runRemove(cmd *cobra.Command, args []string) error {
 		if !confirm(fmt.Sprintf("Remove worktree %s/%s? [y/N] ", project, branch)) {
 			return nil
 		}
-
-	default:
-		return fmt.Errorf("expected 0 or 2 arguments, got %d", len(args))
 	}
 
 	rc, err := config.Resolve(project)

@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Symlink files from repo root into new worktrees via `symlink` project config field.
+- `--project` / `-p` flag to override project on any command; project is inferred from working directory when omitted.
 - Attach to existing tmux session when invoked outside tmux.
 - Support GitHub URLs in `project add` to register a project by repository URL.
 - Support GitHub issue and pull request URLs in `tree add` to create worktrees directly from links.
@@ -48,6 +49,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Reject unknown subcommands on `tree` instead of launching TUI.
 - Show help for unknown subcommands but not for runtime errors.
 - Make `worktree_dir` optional with XDG default and fallback.
+- Commands no longer accept `<project>` as a positional argument; use `--project` flag or cwd inference instead.
 
 ### Removed
 

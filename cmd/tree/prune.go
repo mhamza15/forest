@@ -7,7 +7,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/mhamza15/forest/internal/completion"
 	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/forest"
 	"github.com/mhamza15/forest/internal/git"
@@ -17,15 +16,14 @@ var dryRunFlag bool
 
 func pruneCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "prune [project]",
+		Use:   "prune",
 		Short: "Remove worktrees whose branches have been merged or deleted",
 		Long: `Check each worktree's branch and remove it if it has been merged
 into the project's base branch, or if the branch no longer exists on
 the remote (common after squash-merge workflows). The base branch
 worktree itself is never pruned.`,
-		Args:              cobra.MaximumNArgs(1),
-		RunE:              runPrune,
-		ValidArgsFunction: completion.Projects,
+		Args: cobra.NoArgs,
+		RunE: runPrune,
 	}
 
 	cmd.Flags().BoolVar(&dryRunFlag, "dry-run", false, "show what would be pruned without removing")
@@ -34,13 +32,13 @@ worktree itself is never pruned.`,
 }
 
 func runPrune(cmd *cobra.Command, args []string) error {
-	var names []string
+	projectFlag, _ := cmd.Flags().GetString("project")
 
-	if len(args) == 1 {
-		names = []string{args[0]}
+	var names []string
+	if projectFlag != "" {
+		names = []string{projectFlag}
 	} else {
 		var err error
-
 		names, err = config.ListProjects()
 		if err != nil {
 			return err

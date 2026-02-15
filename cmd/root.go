@@ -56,6 +56,7 @@ func resolveVersion() string {
 func init() {
 	rootCmd.Version = resolveVersion()
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "enable debug logging")
+	rootCmd.PersistentFlags().StringP("project", "p", "", "project name (inferred from working directory when omitted)")
 
 	rootCmd.AddCommand(configcmd.Command())
 	rootCmd.AddCommand(projectcmd.Command())

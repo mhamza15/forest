@@ -24,46 +24,38 @@ func Projects(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Com
 	return completions, cobra.ShellCompDirectiveNoFileComp
 }
 
-// Branches returns worktree branch names for the project specified as
-// the first argument. It is intended for use as the second positional
-// argument completion on tree commands.
+// Branches returns worktree branch names for shell completion. The
+// project is determined from the --project flag or inferred from the
+// working directory.
 func Branches(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
-	if len(args) == 0 {
+	// Only complete the first argument (the branch name).
+	if len(args) > 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	project := args[0]
+	project, _ := cmd.Flags().GetString("project")
+	if project == "" {
+		var err error
 
+		project, err = config.InferProject()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+	}
 	proj, err := config.LoadProject(project)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
-
 	trees, err := git.List(proj.Repo)
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
 
 	var completions []cobra.Completion
-
 	for _, t := range trees {
 		if t.Branch != "" && !t.Bare {
 			completions = append(completions, cobra.Completion(t.Branch))
 		}
 	}
-
 	return completions, cobra.ShellCompDirectiveNoFileComp
-}
-
-// ProjectThenBranch completes the first argument as a project name
-// and the second argument as a branch name within that project.
-func ProjectThenBranch(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
-	switch len(args) {
-	case 0:
-		return Projects(cmd, args, toComplete)
-	case 1:
-		return Branches(cmd, args, toComplete)
-	default:
-		return nil, cobra.ShellCompDirectiveNoFileComp
-	}
 }

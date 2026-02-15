@@ -9,7 +9,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/mhamza15/forest/internal/completion"
 	iconfig "github.com/mhamza15/forest/internal/config"
 )
 
@@ -17,25 +16,26 @@ import (
 // subcommand of root.
 func Command() *cobra.Command {
 	return &cobra.Command{
-		Use:               "config [project]",
-		Short:             "Open configuration in your editor",
-		Long:              "Opens the global config in $EDITOR. If a project name is given, opens that project's config instead.",
-		Args:              cobra.MaximumNArgs(1),
-		RunE:              run,
-		ValidArgsFunction: completion.Projects,
+		Use:   "config",
+		Short: "Open configuration in your editor",
+		Long:  "Opens the global config in $EDITOR. Use --project to open a specific project's config instead.",
+		Args:  cobra.NoArgs,
+		RunE:  run,
 	}
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, _ []string) error {
+	project, _ := cmd.Flags().GetString("project")
+
 	var path string
 
-	if len(args) == 0 {
+	if project == "" {
 		if err := iconfig.WriteDefaultGlobal(); err != nil {
 			return err
 		}
 		path = iconfig.GlobalConfigPath()
 	} else {
-		path = iconfig.ProjectConfigPath(args[0])
+		path = iconfig.ProjectConfigPath(project)
 	}
 
 	if _, err := os.Stat(path); err != nil {
@@ -43,7 +43,6 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	slog.Debug("opening config", slog.String("path", path))
-
 	return openEditor(path)
 }
 

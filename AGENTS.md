@@ -30,9 +30,9 @@ main.go → cmd.Execute()
 
 ### Data flow for worktree creation
 
-1. User invokes `forest tree add <project> <branch>` (or a GitHub link)
+1. User invokes `forest tree add <branch>` (or a GitHub link, or `--project` override)
 2. `config.Resolve(project)` loads global + project YAML configs, merges into `ResolvedConfig`
-3. `forest.AddTree(rc, branch)` checks for existing worktree via `git.FindByBranch`, creates via `git.Add`, copies files via `git.CopyFiles`
+3. `forest.AddTree(rc, branch)` checks for existing worktree via `git.FindByBranch`, creates via `git.Add`, copies files via `git.CopyFiles`, symlinks files via `git.SymlinkFiles`
 4. `forest.OpenSession(rc, branch, path)` creates tmux session via `tmux.NewSession`, applies layout via `tmux.ApplyLayout`
 5. `tmux.SwitchTo(sessionName)` attaches the user to the new session
 
@@ -109,12 +109,11 @@ func addCmd() *cobra.Command {
     return &cobra.Command{
         Use:   "add ...",
         Short: "...",
-        Args:  cobra.ExactArgs(2),
+        Args:  cobra.ExactArgs(1),
         RunE:  runAdd,
-        ValidArgsFunction: completion.ProjectThenBranch,
+        ValidArgsFunction: completion.Branches,
     }
 }
-
 func runAdd(cmd *cobra.Command, args []string) error {
     // ...
     return nil
@@ -124,6 +123,7 @@ func runAdd(cmd *cobra.Command, args []string) error {
 - All commands use `RunE` (returns `error`), never `Run`.
 - Flags are defined on the `*cobra.Command` in the factory function, stored in package-level vars.
 - `SilenceErrors: true` on root; `SilenceUsage` set in `PersistentPreRun` after command resolution.
+- `--project` / `-p` persistent flag on root for project override; commands infer from cwd when omitted.
 
 ### Error handling
 

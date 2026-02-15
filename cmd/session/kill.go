@@ -6,22 +6,36 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/completion"
+	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/tmux"
 )
 
 func killCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:               "kill <project> <branch>",
+		Use:               "kill <branch>",
 		Short:             "Kill a tmux session without removing its worktree",
-		Args:              cobra.ExactArgs(2),
+		Args:              cobra.ExactArgs(1),
 		RunE:              runKill,
-		ValidArgsFunction: completion.ProjectThenBranch,
+		ValidArgsFunction: completion.Branches,
 	}
 }
 
 func runKill(cmd *cobra.Command, args []string) error {
-	project := args[0]
-	branch := args[1]
+	projectFlag, _ := cmd.Flags().GetString("project")
+
+	branch := args[0]
+
+	var project string
+
+	if projectFlag != "" {
+		project = projectFlag
+	} else {
+		var err error
+		project, err = config.InferProject()
+		if err != nil {
+			return err
+		}
+	}
 
 	sessionName := tmux.SessionName(project, branch)
 

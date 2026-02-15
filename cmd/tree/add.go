@@ -17,34 +17,38 @@ import (
 
 func addCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "add {<project> <branch> | <github-link>}",
+		Use:   "add {<branch> | <github-link>}",
 		Short: "Create a new worktree and tmux session",
-		Long: `Create a new git worktree for the project and open it in a tmux session.
-
-If the worktree already exists, the command switches to the existing
-tmux session instead. The new branch is based on the project's configured
-base branch, falling back to the global default.
-
-A GitHub issue or pull request URL may be passed instead of the project
-and branch arguments:
-
-  forest tree add https://github.com/owner/repo/issues/42
-  forest tree add https://github.com/owner/repo/pull/99
-
-For issues, a branch named "issue-<number>" is created (e.g. "issue-42").
-For pull requests, the PR's head branch is fetched. If the PR comes
-from a fork, the branch is fetched from the fork's remote.
-
-The project is determined automatically by matching the repository in
-the URL against the origin remotes of registered projects.`,
-		Args:              cobra.RangeArgs(1, 2),
+		Long: "Create a new git worktree for the project and open it in a tmux session.\n" +
+			"\n" +
+			"The project is resolved from the --project flag when set, or inferred\n" +
+			"from the current working directory by matching its git remote against\n" +
+			"registered projects.\n" +
+			"\n" +
+			"If the worktree already exists, the command switches to the existing\n" +
+			"tmux session instead. The new branch is based on the project's configured\n" +
+			"base branch, falling back to the global default.\n" +
+			"\n" +
+			"A GitHub issue or pull request URL may be passed instead of a branch:\n" +
+			"\n" +
+			"  forest tree add https://github.com/owner/repo/issues/42\n" +
+			"  forest tree add https://github.com/owner/repo/pull/99\n" +
+			"\n" +
+			"For issues, a branch named \"issue-<number>\" is created (e.g. \"issue-42\").\n" +
+			"For pull requests, the PR's head branch is fetched. If the PR comes\n" +
+			"from a fork, the branch is fetched from the fork's remote.\n" +
+			"\n" +
+			"When using a GitHub link, the project is determined automatically by\n" +
+			"matching the repository in the URL against the origin remotes of\n" +
+			"registered projects.",
+		Args:              cobra.ExactArgs(1),
 		RunE:              runAdd,
-		ValidArgsFunction: completion.ProjectThenBranch,
+		ValidArgsFunction: completion.Branches,
 	}
 }
 
 // isGitHubLink returns true if the argument looks like a GitHub URL
-// rather than a plain project name.
+// rather than a plain branch name.
 func isGitHubLink(s string) bool {
 	return strings.HasPrefix(s, "https://github.com/")
 }
@@ -56,42 +60,36 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		rc      config.ResolvedConfig
 	)
 
-	switch {
+	projectFlag, _ := cmd.Flags().GetString("project")
 
-	// forest tree add <github-link>
-	case len(args) == 1 && isGitHubLink(args[0]):
+	if isGitHubLink(args[0]) {
 		link, err := github.ParseLink(args[0])
 		if err != nil {
 			return err
 		}
-
 		name, resolved, err := config.FindProjectByRemote(link.NWO())
 		if err != nil {
 			return err
 		}
-
 		project = name
 		rc = resolved
-
 		branch, err = resolveLinkBranch(link, rc.Repo)
 		if err != nil {
 			return err
 		}
-
-	// forest tree add <project> <branch>
-	case len(args) == 2:
-		project = args[0]
-		branch = args[1]
-
+	} else {
+		branch = args[0]
+		var err error
+		project, err = resolveProject(projectFlag)
+		if err != nil {
+			return err
+		}
 		resolved, err := config.Resolve(project)
 		if err != nil {
 			return err
 		}
 
 		rc = resolved
-
-	default:
-		return fmt.Errorf("expected <project> <branch> or a GitHub issue/PR link")
 	}
 
 	result, err := forest.AddTree(rc, branch)

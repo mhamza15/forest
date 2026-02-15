@@ -90,7 +90,7 @@ func TestInferProjectFromDir_NoMatch(t *testing.T) {
 	repo := initTestRepo(t, "https://github.com/acme/unknown.git")
 
 	_, err := InferProjectFromDir(repo)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "--project")
 }
 
@@ -98,6 +98,6 @@ func TestInferProjectFromDir_NotGitRepo(t *testing.T) {
 	dir := t.TempDir()
 
 	_, err := InferProjectFromDir(dir)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "--project")
 }

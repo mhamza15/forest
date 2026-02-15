@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 
-	"github.com/mhamza15/forest/internal/completion"
 	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/git"
 )
@@ -21,22 +20,22 @@ var (
 
 func listCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:               "list [project]",
-		Short:             "List worktrees for one or all projects",
-		Args:              cobra.MaximumNArgs(1),
-		RunE:              runList,
-		ValidArgsFunction: completion.Projects,
+		Use:   "list",
+		Short: "List worktrees for one or all projects",
+		Args:  cobra.NoArgs,
+		RunE:  runList,
 	}
 }
 
 func runList(cmd *cobra.Command, args []string) error {
+	projectFlag, _ := cmd.Flags().GetString("project")
+
 	var names []string
 
-	if len(args) == 1 {
-		names = []string{args[0]}
+	if projectFlag != "" {
+		names = []string{projectFlag}
 	} else {
 		var err error
-
 		names, err = config.ListProjects()
 		if err != nil {
 			return err
