@@ -64,7 +64,7 @@ func runPrune(cmd *cobra.Command, args []string) error {
 		// branches deleted after a squash-merge PR.
 		remoteBranches, err := git.RemoteBranches(rc.Repo, "origin")
 		if err != nil {
-			slog.Debug("could not fetch remote branches", "project", name, "err", err)
+			slog.Debug("could not fetch remote branches", slog.String("project", name), slog.Any("err", err))
 		}
 
 		repoPath := filepath.Clean(rc.Repo)

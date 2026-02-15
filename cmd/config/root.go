@@ -42,7 +42,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("config file not found: %s", path)
 	}
 
-	slog.Debug("opening config", "path", path)
+	slog.Debug("opening config", slog.String("path", path))
 
 	return openEditor(path)
 }

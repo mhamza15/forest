@@ -150,7 +150,7 @@ func runAddFromGitHub(rawURL, name string) error {
 		return err
 	}
 
-	slog.Debug("switching to tmux session", "session", result.SessionName)
+	slog.Debug("switching to tmux session", slog.String("session", result.SessionName))
 
 	return tmux.SwitchTo(result.SessionName)
 }

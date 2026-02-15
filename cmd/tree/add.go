@@ -117,7 +117,7 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	slog.Debug("switching to tmux session", "session", result.SessionName)
+	slog.Debug("switching to tmux session", slog.String("session", result.SessionName))
 
 	return tmux.SwitchTo(result.SessionName)
 }
@@ -139,9 +139,9 @@ func resolveLinkBranch(link github.Link, repoPath string) (string, error) {
 		}
 
 		slog.Debug("resolved PR head",
-			"branch", head.Branch,
-			"fork", head.IsFork,
-			"clone_url", head.CloneURL,
+			slog.String("branch", head.Branch),
+			slog.Bool("fork", head.IsFork),
+			slog.String("clone_url", head.CloneURL),
 		)
 
 		// For forks, the branch may not exist locally. Fetch it from

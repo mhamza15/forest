@@ -54,7 +54,7 @@ func AddTree(rc config.ResolvedConfig, branch string) (AddTreeResult, error) {
 
 	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
 
-	slog.Debug("creating worktree", "path", wtPath, "base", rc.Branch)
+	slog.Debug("creating worktree", slog.String("path", wtPath), slog.String("base", rc.Branch))
 
 	if err := os.MkdirAll(filepath.Dir(wtPath), 0o755); err != nil {
 		return result, fmt.Errorf("creating worktree parent dir: %w", err)
@@ -129,7 +129,7 @@ func RemoveTree(rc config.ResolvedConfig, branch string, force bool) error {
 
 	sessionName := tmux.SessionName(rc.Name, branch)
 	if killErr := tmux.KillSession(sessionName); killErr != nil {
-		slog.Debug("could not kill tmux session", "session", sessionName, "err", killErr)
+		slog.Debug("could not kill tmux session", slog.String("session", sessionName), slog.Any("err", killErr))
 	}
 
 	return nil

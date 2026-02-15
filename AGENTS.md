@@ -136,7 +136,7 @@ func runAdd(cmd *cobra.Command, args []string) error {
 
 - `log/slog` with the standard `TextHandler` writing to stderr.
 - Debug-level only, gated behind `--verbose` flag.
-- Pattern: `slog.Debug("message", "key", value, "key2", value2)`
+- Pattern: `slog.Debug("message", slog.String("key", value), slog.Any("err", err))`
 
 ### External commands
 
