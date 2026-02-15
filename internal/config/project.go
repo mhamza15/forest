@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
@@ -150,38 +151,100 @@ func Resolve(name string) (ResolvedConfig, error) {
 	return rc, nil
 }
 
-// FindProjectByRemote finds a registered project that has any remote
-// matching the given "owner/repo" string.
+// FindProjectByRemote finds a registered project whose git remote URL
+// matches the given "owner/repo" string.
+//
+// Resolution order:
+//
+//  1. Origin exact match: the project's origin remote normalizes to the
+//     target NWO. This is the strongest identity signal.
+//  2. Origin repo-name match: some non-origin remote matches the target
+//     NWO, and the project's origin has the same repo name as the target.
+//     This captures the common fork pattern where origin is a personal
+//     fork (e.g. user/repo) of the target (org/repo).
+//  3. Any remote match: any remote normalizes to the target NWO. This is
+//     the weakest signal and serves as a fallback.
 func FindProjectByRemote(nwo string) (string, ResolvedConfig, error) {
 	names, err := ListProjects()
 	if err != nil {
 		return "", ResolvedConfig{}, err
 	}
 
+	_, targetRepo, _ := strings.Cut(nwo, "/")
+	type projectRemotes struct {
+		name    string
+		rc      ResolvedConfig
+		remotes map[string]string // remote name -> normalized NWO
+	}
+
+	projects := make([]projectRemotes, 0, len(names))
 	for _, name := range names {
 		rc, err := Resolve(name)
 		if err != nil {
 			continue
 		}
-
-		remotes, err := git.Remotes(rc.Repo)
+		remoteNames, err := git.Remotes(rc.Repo)
 		if err != nil {
 			continue
 		}
 
-		for _, remote := range remotes {
-			raw, err := git.RemoteURL(rc.Repo, remote)
+		normalized := make(map[string]string, len(remoteNames))
+		for _, r := range remoteNames {
+			raw, err := git.RemoteURL(rc.Repo, r)
 			if err != nil {
 				continue
 			}
+			normalized[r] = git.NormalizeRemoteURL(raw)
+		}
+		projects = append(projects, projectRemotes{name: name, rc: rc, remotes: normalized})
+	}
 
-			if git.NormalizeRemoteURL(raw) == nwo {
-				return name, rc, nil
-			}
+	// Pass 1: origin exact match.
+	for _, p := range projects {
+		if p.remotes["origin"] == nwo {
+			return p.name, p.rc, nil
 		}
 	}
 
+	// Pass 2: any remote matches NWO, and origin shares the same repo
+	// name. This picks a personal fork (user/myproject) over an
+	// unrelated repo (corp/myproject-internal) that merely tracks
+	// the target as upstream.
+	for _, p := range projects {
+		if !hasRemoteNWO(p.remotes, nwo) {
+			continue
+		}
+
+		origin := p.remotes["origin"]
+		if origin == "" {
+			continue
+		}
+
+		_, originRepo, _ := strings.Cut(origin, "/")
+
+		if originRepo == targetRepo {
+			return p.name, p.rc, nil
+		}
+	}
+
+	// Pass 3: any remote matches NWO.
+	for _, p := range projects {
+		if hasRemoteNWO(p.remotes, nwo) {
+			return p.name, p.rc, nil
+		}
+	}
 	return "", ResolvedConfig{}, fmt.Errorf("no project found with remote matching %q", nwo)
+}
+
+// hasRemoteNWO reports whether any remote in the map normalizes to nwo.
+func hasRemoteNWO(remotes map[string]string, nwo string) bool {
+	for _, normalized := range remotes {
+		if normalized == nwo {
+			return true
+		}
+	}
+
+	return false
 }
 
 // ListProjects returns the names of all registered projects by scanning
