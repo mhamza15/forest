@@ -73,6 +73,10 @@ make fmt       # Run golangci-lint run --fix (gofumpt formatting)
 gotestsum -- -run TestSessionName ./internal/tmux/
 ```
 
+## Changelog
+
+Update `CHANGELOG.md` with every user-facing change. Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. Group entries under `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, or `Security`. Write entries from the user's perspective, not the implementation's.
+
 ## Code Conventions & Common Patterns
 
 ### Import grouping
