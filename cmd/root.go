@@ -11,6 +11,7 @@ import (
 	projectcmd "github.com/mhamza15/forest/cmd/project"
 	sessioncmd "github.com/mhamza15/forest/cmd/session"
 	treecmd "github.com/mhamza15/forest/cmd/tree"
+	"github.com/mhamza15/forest/internal/completion"
 	"github.com/spf13/cobra"
 )
 
@@ -20,25 +21,42 @@ var version = ""
 
 var verbose bool
 
-// rootCmd is the top-level forest command.
-var rootCmd = &cobra.Command{
-	Use:   "forest",
-	Short: "Manage git worktrees with tmux sessions",
-	Long: `Forest is a CLI tool for managing git worktrees and tmux sessions.
+func newRootCmd() *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:   "forest",
+		Short: "Manage git worktrees with tmux sessions",
+		Long: `Forest is a CLI tool for managing git worktrees and tmux sessions.
 
 It simplifies the workflow of creating and managing multiple working
 copies of a repository, each in its own directory with a dedicated
 tmux session.`,
 
-	SilenceErrors: true,
+		SilenceErrors: true,
 
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// Silence usage after the command has been resolved. This way
-		// cobra still shows usage for unknown subcommands and arg
-		// validation errors, but not for runtime errors.
-		cmd.SilenceUsage = true
-		initLogging()
-	},
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			// Silence usage after the command has been resolved. This way
+			// cobra still shows usage for unknown subcommands and arg
+			// validation errors, but not for runtime errors.
+			cmd.SilenceUsage = true
+			initLogging()
+		},
+	}
+
+	rootCmd.Version = resolveVersion()
+
+	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "enable debug logging")
+	rootCmd.PersistentFlags().StringP("project", "p", "", "project name (inferred from working directory when omitted)")
+
+	if err := rootCmd.RegisterFlagCompletionFunc("project", completion.Projects); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: registering --project completion: %s\n", err)
+	}
+
+	rootCmd.AddCommand(configcmd.Command())
+	rootCmd.AddCommand(projectcmd.Command())
+	rootCmd.AddCommand(sessioncmd.Command())
+	rootCmd.AddCommand(treecmd.Command())
+
+	return rootCmd
 }
 
 func resolveVersion() string {
@@ -53,19 +71,10 @@ func resolveVersion() string {
 	return "dev"
 }
 
-func init() {
-	rootCmd.Version = resolveVersion()
-	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "enable debug logging")
-	rootCmd.PersistentFlags().StringP("project", "p", "", "project name (inferred from working directory when omitted)")
-
-	rootCmd.AddCommand(configcmd.Command())
-	rootCmd.AddCommand(projectcmd.Command())
-	rootCmd.AddCommand(sessioncmd.Command())
-	rootCmd.AddCommand(treecmd.Command())
-}
-
 // Execute runs the root command. It is the single entry point called from main.
 func Execute() {
+	rootCmd := newRootCmd()
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
