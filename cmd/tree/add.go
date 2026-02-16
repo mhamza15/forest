@@ -144,8 +144,8 @@ func runAdd(cmd *cobra.Command, args []string) error {
 
 // resolveLinkBranch determines the branch name for a GitHub link. For
 // issues it returns the issue number as the branch name. For PRs it
-// fetches the head branch, handling forks by fetching from the fork's
-// remote when necessary.
+// fetches the head branch from the appropriate remote when the branch
+// does not exist locally.
 func resolveLinkBranch(link github.Link, repoPath string) (string, error) {
 	switch link.Kind {
 
@@ -164,15 +164,24 @@ func resolveLinkBranch(link github.Link, repoPath string) (string, error) {
 			slog.String("clone_url", head.CloneURL),
 		)
 
-		// For forks, the branch may not exist locally. Fetch it from
-		// the contributor's remote so that git worktree add can check
-		// it out. Skip the fetch if the branch already exists — it
+		// The branch may not exist locally. For forks, fetch from
+		// the contributor's remote. For same-repo PRs, fetch from
+		// origin. Skip the fetch if the branch already exists -- it
 		// may already be checked out in a worktree, and git refuses
 		// to fetch into a checked-out branch.
-		if head.IsFork && !git.BranchExists(repoPath, head.Branch) {
-			fmt.Printf("Fetching branch %q from fork %s\n", head.Branch, head.CloneURL)
-			if err := git.Fetch(repoPath, head.CloneURL, head.Branch, head.Branch); err != nil {
-				return "", fmt.Errorf("fetching fork branch: %w", err)
+		if !git.BranchExists(repoPath, head.Branch) {
+			if head.IsFork {
+				fmt.Printf("Fetching branch %q from fork %s\n", head.Branch, head.CloneURL)
+
+				if err := git.Fetch(repoPath, head.CloneURL, head.Branch, head.Branch); err != nil {
+					return "", fmt.Errorf("fetching fork branch: %w", err)
+				}
+			} else {
+				fmt.Printf("Fetching branch %q from origin\n", head.Branch)
+
+				if err := git.Fetch(repoPath, "origin", head.Branch, head.Branch); err != nil {
+					return "", fmt.Errorf("fetching branch from origin: %w", err)
+				}
 			}
 		}
 
