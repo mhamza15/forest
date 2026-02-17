@@ -72,11 +72,15 @@ type Model struct {
 }
 
 // NewModel loads projects and their worktrees, returning a model
-// ready to run.
-func NewModel() (Model, error) {
+// ready to run. When project is non-empty, only that project is shown.
+func NewModel(project string) (Model, error) {
 	names, err := config.ListProjects()
 	if err != nil {
 		return Model{}, err
+	}
+
+	if project != "" {
+		names = []string{project}
 	}
 
 	var projects []projectNode
@@ -96,7 +100,7 @@ func NewModel() (Model, error) {
 			name:     name,
 			repo:     proj.Repo,
 			trees:    trees,
-			expanded: false,
+			expanded: project != "",
 		})
 	}
 

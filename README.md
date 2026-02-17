@@ -206,13 +206,13 @@ Forest ships as a [Fisher](https://github.com/jorgebucaran/fisher)-compatible fi
 | `ftl` | `forest tree list` |
 | `ftr` | `forest tree remove` |
 | `fts` | `forest tree switch` |
-| `ftp` | `forest tree prune` |
-| `ftP` | `forest tree --project` |
-| `ftaP` | `forest tree add --project` |
-| `ftlP` | `forest tree list --project` |
-| `ftrP` | `forest tree remove --project` |
-| `ftsP` | `forest tree switch --project` |
-| `ftpP` | `forest tree prune --project` |
+| `ftpr` | `forest tree prune` |
+| `ftp` | `forest tree --project` |
+| `ftap` | `forest tree add --project` |
+| `ftlp` | `forest tree list --project` |
+| `ftrp` | `forest tree remove --project` |
+| `ftsp` | `forest tree switch --project` |
+| `ftprp` | `forest tree prune --project` |
 | `fp` | `forest project` |
 | `fpa` | `forest project add` |
 | `fpl` | `forest project list` |
@@ -220,9 +220,9 @@ Forest ships as a [Fisher](https://github.com/jorgebucaran/fisher)-compatible fi
 | `fs` | `forest session` |
 | `fsl` | `forest session list` |
 | `fsk` | `forest session kill` |
-| `fsP` | `forest session --project` |
-| `fslP` | `forest session list --project` |
-| `fskP` | `forest session kill --project` |
+| `fsp` | `forest session --project` |
+| `fslp` | `forest session list --project` |
+| `fskp` | `forest session kill --project` |
 | `fc` | `forest config` |
 
 Install with Fisher:

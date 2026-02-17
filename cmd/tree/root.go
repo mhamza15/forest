@@ -24,6 +24,7 @@ func Command() *cobra.Command {
 }
 
 // runBrowser launches the inline TUI for browsing projects and trees.
-func runBrowser(cmd *cobra.Command, args []string) error {
-	return runTreeBrowser()
+func runBrowser(cmd *cobra.Command, _ []string) error {
+	project, _ := cmd.Flags().GetString("project")
+	return runTreeBrowser(project)
 }

@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
+
+### Added
+
+- `--project` flag support on `forest tree` to scope the interactive browser to a single project.
+- Fish abbreviations with `--project` variants (`p` suffix) for all tree and session commands.
 ## [0.1.1] - 2026-02-17
 ### Fixed
 

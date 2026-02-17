@@ -15,15 +15,15 @@ abbr --add fta  "forest tree add"
 abbr --add ftl  "forest tree list"
 abbr --add ftr  "forest tree remove"
 abbr --add fts  "forest tree switch"
-abbr --add ftp  "forest tree prune"
+abbr --add ftpr "forest tree prune"
 
 # tree with --project override.
-abbr --add ftP   "forest tree --project"
-abbr --add ftaP  "forest tree add --project"
-abbr --add ftlP  "forest tree list --project"
-abbr --add ftrP  "forest tree remove --project"
-abbr --add ftsP  "forest tree switch --project"
-abbr --add ftpP  "forest tree prune --project"
+abbr --add ftp   "forest tree --project"
+abbr --add ftap  "forest tree add --project"
+abbr --add ftlp  "forest tree list --project"
+abbr --add ftrp  "forest tree remove --project"
+abbr --add ftsp  "forest tree switch --project"
+abbr --add ftprp "forest tree prune --project"
 
 # project: project registration.
 abbr --add fp   "forest project"
@@ -37,9 +37,9 @@ abbr --add fsl  "forest session list"
 abbr --add fsk  "forest session kill"
 
 # session with --project override.
-abbr --add fsP   "forest session --project"
-abbr --add fslP  "forest session list --project"
-abbr --add fskP  "forest session kill --project"
+abbr --add fsp   "forest session --project"
+abbr --add fslp  "forest session list --project"
+abbr --add fskp  "forest session kill --project"
 
 # config: open config in editor.
 abbr --add fc  "forest config"
