@@ -193,3 +193,37 @@ forest completion zsh > "${fpath[1]}/_forest"
 ```
 
 Project names and branch names complete dynamically.
+
+## Fish abbreviations
+
+Forest ships as a [Fisher](https://github.com/jorgebucaran/fisher)-compatible fish plugin with short abbreviations for every command:
+
+| Abbreviation | Expansion |
+|---|---|
+| `f` | `forest` |
+| `ft` | `forest tree` |
+| `fta` | `forest tree add` |
+| `ftl` | `forest tree list` |
+| `ftr` | `forest tree remove` |
+| `fts` | `forest tree switch` |
+| `ftp` | `forest tree prune` |
+| `fp` | `forest project` |
+| `fpa` | `forest project add` |
+| `fpl` | `forest project list` |
+| `fpr` | `forest project remove` |
+| `fs` | `forest session` |
+| `fsl` | `forest session list` |
+| `fsk` | `forest session kill` |
+| `fc` | `forest config` |
+
+Install with Fisher:
+
+```
+fisher install mhamza15/forest
+```
+
+Or source directly:
+
+```
+source /path/to/forest/conf.d/forest.fish
+```
