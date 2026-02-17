@@ -164,24 +164,19 @@ func resolveLinkBranch(link github.Link, repoPath string) (string, error) {
 			slog.String("clone_url", head.CloneURL),
 		)
 
-		// The branch may not exist locally. For forks, fetch from
-		// the contributor's remote. For same-repo PRs, fetch from
-		// origin. Skip the fetch if the branch already exists -- it
-		// may already be checked out in a worktree, and git refuses
-		// to fetch into a checked-out branch.
+		// The branch may not exist locally. Fetch it from the head
+		// repository's clone URL, which is the fork URL for cross-repo
+		// PRs and the base repo URL for same-repo PRs. We always use
+		// the clone URL rather than "origin" because the user's origin
+		// remote may point to their own fork, not the PR's repository.
+		// Skip the fetch if the branch already exists -- it may already
+		// be checked out in a worktree, and git refuses to fetch into a
+		// checked-out branch.
 		if !git.BranchExists(repoPath, head.Branch) {
-			if head.IsFork {
-				fmt.Printf("Fetching branch %q from fork %s\n", head.Branch, head.CloneURL)
+			fmt.Printf("Fetching branch %q from %s\n", head.Branch, head.CloneURL)
 
-				if err := git.Fetch(repoPath, head.CloneURL, head.Branch, head.Branch); err != nil {
-					return "", fmt.Errorf("fetching fork branch: %w", err)
-				}
-			} else {
-				fmt.Printf("Fetching branch %q from origin\n", head.Branch)
-
-				if err := git.Fetch(repoPath, "origin", head.Branch, head.Branch); err != nil {
-					return "", fmt.Errorf("fetching branch from origin: %w", err)
-				}
+			if err := git.Fetch(repoPath, head.CloneURL, head.Branch, head.Branch); err != nil {
+				return "", fmt.Errorf("fetching branch: %w", err)
 			}
 		}
 
