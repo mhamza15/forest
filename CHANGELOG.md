@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Resolve correct project from GitHub PR URLs when multiple projects share the same upstream remote.
 - Fetch PR branch from origin for same-repo pull requests instead of failing with "invalid reference".
+- Infer project from GitHub URLs in `tree switch`, matching the behavior of `tree add`.
 
 ### Added
 
