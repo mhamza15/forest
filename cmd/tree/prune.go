@@ -10,6 +10,7 @@ import (
 	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/forest"
 	"github.com/mhamza15/forest/internal/git"
+	"github.com/mhamza15/forest/internal/github"
 )
 
 var dryRunFlag bool
@@ -19,9 +20,10 @@ func pruneCmd() *cobra.Command {
 		Use:   "prune",
 		Short: "Remove worktrees whose branches have been merged or deleted",
 		Long: `Check each worktree's branch and remove it if it has been merged
-into the project's base branch, or if the branch no longer exists on
-the remote (common after squash-merge workflows). The base branch
-worktree itself is never pruned.`,
+into the project's base branch. When a branch no longer exists on
+the remote, forest checks via gh whether the PR was merged (common
+after squash-merge workflows). If gh is unavailable or the PR was
+not merged, an interactive confirmation is shown instead.`,
 		Args: cobra.NoArgs,
 		RunE: runPrune,
 	}
@@ -65,6 +67,10 @@ func runPrune(cmd *cobra.Command, args []string) error {
 			slog.Debug("could not fetch remote branches", slog.String("project", name), slog.Any("err", err))
 		}
 
+		// Resolve NWO once per project for gh PR lookups. A failure
+		// here is non-fatal; we fall back to interactive confirmation.
+		nwo := resolveNWO(rc.Repo)
+
 		repoPath := filepath.Clean(rc.Repo)
 
 		for _, t := range trees {
@@ -78,8 +84,19 @@ func runPrune(cmd *cobra.Command, args []string) error {
 				continue
 			}
 
-			if !git.IsPrunable(rc.Repo, t.Branch, rc.Branch, remoteBranches) {
+			reason := git.PruneCheck(rc.Repo, t.Branch, rc.Branch, remoteBranches)
+			if reason == git.PruneNone {
 				continue
+			}
+
+			// When the branch is gone from the remote but not merged
+			// locally, verify via gh that the PR was actually merged.
+			// Fall back to an interactive prompt when gh is
+			// unavailable or the PR was not merged.
+			if reason == git.PruneRemoteGone {
+				if !shouldPruneRemoteGone(nwo, name, t.Branch) {
+					continue
+				}
 			}
 
 			if dryRunFlag {
@@ -103,4 +120,41 @@ func runPrune(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+// shouldPruneRemoteGone determines whether a branch whose remote
+// tracking branch has been deleted should be pruned. It first tries
+// the gh CLI to check for a merged PR. If gh confirms the PR was
+// merged, pruning proceeds. Otherwise, the user is prompted.
+func shouldPruneRemoteGone(nwo, project, branch string) bool {
+	if nwo != "" {
+		merged, err := github.IsPRMerged(nwo, branch)
+		if err != nil {
+			slog.Debug("gh PR check failed, falling back to prompt",
+				slog.String("branch", branch),
+				slog.Any("err", err),
+			)
+		}
+
+		if merged {
+			return true
+		}
+	}
+
+	return confirm(fmt.Sprintf(
+		"Branch %s/%s is gone from the remote but may not be merged. Remove? [y/N] ",
+		project, branch,
+	))
+}
+
+// resolveNWO returns the "owner/repo" string for the origin remote,
+// or an empty string if it cannot be determined. An empty result
+// causes the caller to skip gh lookups and fall back to prompting.
+func resolveNWO(repoPath string) string {
+	raw, err := git.RemoteURL(repoPath, "origin")
+	if err != nil {
+		return ""
+	}
+
+	return git.NormalizeRemoteURL(raw)
 }

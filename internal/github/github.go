@@ -210,3 +210,26 @@ func FetchPRHead(nwo string, number int) (PRHead, error) {
 		IsFork:   pr.IsCrossRepository,
 	}, nil
 }
+
+// IsPRMerged checks whether a merged pull request exists for the
+// given branch in the repository identified by nwo ("owner/repo").
+// It uses gh pr list to find merged PRs matching the head branch.
+// Returns an error if the gh CLI is unavailable or the query fails.
+func IsPRMerged(nwo, branch string) (bool, error) {
+	cmd := exec.Command(
+		"gh", "pr", "list",
+		"--head", branch,
+		"--state", "merged",
+		"--repo", nwo,
+		"--json", "number",
+		"--limit", "1",
+	)
+
+	output, err := cmd.Output()
+	if err != nil {
+		return false, fmt.Errorf("gh pr list: %w", err)
+	}
+
+	// gh pr list --json returns "[]\n" when no PRs match.
+	return len(output) > 0 && strings.TrimSpace(string(output)) != "[]", nil
+}

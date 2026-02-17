@@ -136,21 +136,39 @@ func RemoteBranches(repoPath, remote string) (map[string]bool, error) {
 	return branches, nil
 }
 
-// IsPrunable returns true if a branch should be considered for pruning.
-// A branch is prunable if it has been merged into the target (via
-// merge-base --is-ancestor), or if it no longer exists on the remote
-// (common after squash-merge workflows where the remote branch is
-// deleted after the PR is merged).
-func IsPrunable(repoPath, branch, target string, remoteBranches map[string]bool) bool {
+// PruneReason describes why a branch is eligible for pruning,
+// or that it is not.
+type PruneReason int
+
+const (
+	// PruneNone means the branch should not be pruned.
+	PruneNone PruneReason = iota
+
+	// PruneMerged means the branch is an ancestor of the target branch
+	// and has been fully merged.
+	PruneMerged
+
+	// PruneRemoteGone means the branch no longer exists on the remote.
+	// This may indicate a squash-merge whose remote branch was deleted,
+	// or a branch that was deleted without being merged. Callers should
+	// verify merge status before acting on this reason.
+	PruneRemoteGone
+)
+
+// PruneCheck determines whether a branch should be considered for
+// pruning and returns the reason. A branch is unconditionally prunable
+// if it has been merged into the target. When the branch is simply
+// absent from the remote, PruneRemoteGone is returned so the caller
+// can verify merge status before removing it.
+func PruneCheck(repoPath, branch, target string, remoteBranches map[string]bool) PruneReason {
 	if IsMerged(repoPath, branch, target) {
-		return true
+		return PruneMerged
 	}
-
 	if remoteBranches != nil && !remoteBranches[branch] {
-		return true
+		return PruneRemoteGone
 	}
 
-	return false
+	return PruneNone
 }
 
 // Remove removes the worktree at the given path. If the worktree has

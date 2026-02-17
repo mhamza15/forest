@@ -145,3 +145,76 @@ func TestSafeBranchDir(t *testing.T) {
 		})
 	}
 }
+
+func TestPruneCheck(t *testing.T) {
+	repo := initTestRepo(t)
+
+	// Create a branch that is merged (ancestor of main).
+	mergedBranch := "already-merged"
+	cmd := exec.Command("git", "-C", repo, "branch", mergedBranch, "main")
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, "creating branch: %s", out)
+
+	// Create a branch with an extra commit that is not merged.
+	unmergedBranch := "not-merged"
+	cmd = exec.Command("git", "-C", repo, "branch", unmergedBranch, "main")
+	out, err = cmd.CombinedOutput()
+	require.NoError(t, err, "creating branch: %s", out)
+
+	cmd = exec.Command("git", "-C", repo, "checkout", unmergedBranch)
+	out, err = cmd.CombinedOutput()
+	require.NoError(t, err, "checkout: %s", out)
+
+	cmd = exec.Command("git", "-C", repo, "commit", "--allow-empty", "-m", "diverge")
+	out, err = cmd.CombinedOutput()
+	require.NoError(t, err, "commit: %s", out)
+
+	cmd = exec.Command("git", "-C", repo, "checkout", "main")
+	out, err = cmd.CombinedOutput()
+	require.NoError(t, err, "checkout main: %s", out)
+
+	tests := []struct {
+		name           string
+		branch         string
+		remoteBranches map[string]bool
+		want           PruneReason
+	}{
+		{
+			name:           "merged into target",
+			branch:         mergedBranch,
+			remoteBranches: map[string]bool{mergedBranch: true},
+			want:           PruneMerged,
+		},
+		{
+			name:           "not merged and present on remote",
+			branch:         unmergedBranch,
+			remoteBranches: map[string]bool{unmergedBranch: true},
+			want:           PruneNone,
+		},
+		{
+			name:           "not merged and gone from remote",
+			branch:         unmergedBranch,
+			remoteBranches: map[string]bool{},
+			want:           PruneRemoteGone,
+		},
+		{
+			name:           "merged takes precedence over remote gone",
+			branch:         mergedBranch,
+			remoteBranches: map[string]bool{},
+			want:           PruneMerged,
+		},
+		{
+			name:           "nil remote branches skips remote check",
+			branch:         unmergedBranch,
+			remoteBranches: nil,
+			want:           PruneNone,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := PruneCheck(repo, tt.branch, "main", tt.remoteBranches)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `--project` flag support on `forest tree` to scope the interactive browser to a single project.
 - Fish abbreviations with `--project` variants (`p` suffix) for all tree and session commands.
+
+### Fixed
+
+- `tree prune` no longer silently removes worktrees whose branches were deleted from the remote without being merged. It now checks via `gh` whether the PR was actually merged, and prompts for confirmation when `gh` is unavailable or the PR was not merged.
 ## [0.1.1] - 2026-02-17
 ### Fixed
 
