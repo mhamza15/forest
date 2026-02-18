@@ -32,6 +32,14 @@ type AddTreeResult struct {
 	// SymlinkWarnings contains any warnings generated while symlinking
 	// files into the new worktree.
 	SymlinkWarnings []string
+
+	// Fetched is true if the branch was fetched from a remote
+	// because it did not exist locally.
+	Fetched bool
+
+	// Remote is the name of the remote the branch was fetched
+	// from, set only when Fetched is true.
+	Remote string
 }
 
 // AddTree creates a worktree for the given project and branch. If the
@@ -50,6 +58,21 @@ func AddTree(rc config.ResolvedConfig, branch string) (AddTreeResult, error) {
 	if existing := git.FindByBranch(rc.Repo, branch); existing != nil {
 		result.WorktreePath = existing.Path
 		return result, nil
+	}
+
+	// If the branch does not exist locally, fetch the latest from
+	// the remote so that git can create a worktree tracking it.
+	if !git.BranchExists(rc.Repo, branch) {
+		remote, err := git.FetchRemoteBranch(rc.Repo, branch)
+		if err == nil {
+			result.Fetched = true
+			result.Remote = remote
+
+			slog.Debug("fetched branch from remote",
+				slog.String("branch", branch),
+				slog.String("remote", remote),
+			)
+		}
 	}
 
 	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))

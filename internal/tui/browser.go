@@ -613,7 +613,11 @@ func (m Model) executeNewTree() (tea.Model, tea.Cmd) {
 		}
 	}
 
-	m.status = fmt.Sprintf("created %s/%s", m.newProject, branch)
+	if result.Fetched {
+		m.status = fmt.Sprintf("fetched %s from %s, created %s/%s", branch, result.Remote, m.newProject, branch)
+	} else {
+		m.status = fmt.Sprintf("created %s/%s", m.newProject, branch)
+	}
 	m.mode = modeBrowse
 
 	return m, nil

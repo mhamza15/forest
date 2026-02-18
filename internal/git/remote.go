@@ -83,3 +83,26 @@ func Fetch(repoPath, remoteURL, remoteBranch, localBranch string) error {
 
 	return nil
 }
+
+// FetchRemoteBranch attempts to fetch a single branch from the
+// repository's configured remotes. It tries each remote in order and
+// returns the name of the first remote that provides the branch.
+// The remote tracking ref (e.g., refs/remotes/origin/<branch>) is
+// updated as a side effect, enabling subsequent git operations to
+// create a local branch that tracks the remote.
+func FetchRemoteBranch(repoPath, branch string) (string, error) {
+	remotes, err := Remotes(repoPath)
+	if err != nil || len(remotes) == 0 {
+		return "", fmt.Errorf("no remotes configured")
+	}
+
+	for _, remote := range remotes {
+		cmd := exec.Command("git", "-C", repoPath, "fetch", remote, branch)
+
+		if _, err := cmd.CombinedOutput(); err == nil {
+			return remote, nil
+		}
+	}
+
+	return "", fmt.Errorf("branch %q not found on any remote", branch)
+}

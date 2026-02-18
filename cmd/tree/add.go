@@ -31,8 +31,11 @@ func addCmd() *cobra.Command {
 			"registered projects.\n" +
 			"\n" +
 			"If the worktree already exists, the command switches to the existing\n" +
-			"tmux session instead. The new branch is based on the project's configured\n" +
-			"base branch, falling back to the global default. Use --branch to override.\n" +
+			"tmux session instead. If the branch does not exist locally but exists\n" +
+			"on a remote, it is fetched and the local branch is created with\n" +
+			"upstream tracking configured. Otherwise, a new branch is created\n" +
+			"based on the project's configured base branch, falling back to the\n" +
+			"global default. Use --branch to override.\n" +
 			"\n" +
 			"A GitHub issue or pull request URL may be passed instead of a branch:\n" +
 			"\n" +
@@ -118,6 +121,9 @@ func runAdd(cmd *cobra.Command, args []string) error {
 	}
 
 	if result.Created {
+		if result.Fetched {
+			fmt.Printf("Fetched branch %q from %s\n", branch, result.Remote)
+		}
 		fmt.Printf("Created worktree %s/%s\n", project, branch)
 	} else {
 		fmt.Printf("Worktree %s/%s already exists\n", project, branch)

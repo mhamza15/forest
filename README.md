@@ -32,6 +32,8 @@ forest tree add myapp feature/login
 
 This creates a worktree at `<worktree_dir>/myapp/feature-login` (`worktree_dir` defaults to `~/.local/share/forest/worktrees`), starts a tmux session named `myapp-feature-login`, and switches to it.
 
+If the branch does not exist locally but exists on a remote, it is fetched automatically and the local branch is set up to track the remote, so `git pull` and `git push` work out of the box.
+
 To browse all projects and their worktrees interactively:
 
 ```

@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `--project` flag support on `forest tree` to scope the interactive browser to a single project.
 - Fish abbreviations with `--project` variants (`p` suffix) for all tree and session commands.
+- Automatic fetch from remote when creating a worktree for a branch that does not exist locally. The branch is fetched with upstream tracking configured, so `git pull` and `git push` work immediately.
 
 ### Changed
 

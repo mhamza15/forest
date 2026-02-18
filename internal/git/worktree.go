@@ -35,25 +35,28 @@ type Worktree struct {
 	Bare bool
 }
 
-// Add creates a new worktree at worktreePath for the given branch. If
-// the branch already exists in the repo, it is checked out into the
-// worktree. Otherwise a new branch is created off baseBranch.
+// Add creates a new worktree at worktreePath for the given branch.
+// It picks the appropriate strategy based on where the branch exists:
+//
+//   - Local branch exists: checked out into the new worktree.
+//   - Remote tracking ref exists (e.g., after a fetch): a local
+//     branch is created with --track so that upstream is set.
+//   - Neither exists: a new branch is created off baseBranch.
 func Add(repoPath, worktreePath, branch, baseBranch string) error {
 	var args []string
-
 	if BranchExists(repoPath, branch) {
 		args = []string{"-C", repoPath, "worktree", "add", worktreePath, branch}
+	} else if ref := remoteTrackingRef(repoPath, branch); ref != "" {
+		args = []string{"-C", repoPath, "worktree", "add", "--track", "-b", branch, worktreePath, ref}
 	} else {
 		args = []string{"-C", repoPath, "worktree", "add", "-b", branch, worktreePath, baseBranch}
 	}
 
 	cmd := exec.Command("git", args...)
-
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("git worktree add: %s: %w", bytes.TrimSpace(output), err)
 	}
-
 	return nil
 }
 
@@ -62,6 +65,33 @@ func Add(repoPath, worktreePath, branch, baseBranch string) error {
 func BranchExists(repoPath, branch string) bool {
 	cmd := exec.Command("git", "-C", repoPath, "rev-parse", "--verify", "refs/heads/"+branch)
 	return cmd.Run() == nil
+}
+
+// remoteTrackingRef returns the short remote tracking ref for the
+// given branch (e.g., "origin/feature"), or an empty string if no
+// remote tracks this branch. When multiple remotes track the same
+// branch name, the first match is returned.
+func remoteTrackingRef(repoPath, branch string) string {
+	pattern := "refs/remotes/*/" + branch
+
+	cmd := exec.Command("git", "-C", repoPath, "for-each-ref", "--format=%(refname:short)", pattern)
+
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+
+	ref := strings.TrimSpace(string(output))
+	if ref == "" {
+		return ""
+	}
+
+	// Multiple remotes may track the same branch; use the first.
+	if i := strings.IndexByte(ref, '\n'); i >= 0 {
+		ref = ref[:i]
+	}
+
+	return ref
 }
 
 // CurrentBranch returns the branch name checked out in the given
