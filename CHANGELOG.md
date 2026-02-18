@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.2.0] - 2026-02-18
 
 ### Added
 
@@ -15,9 +15,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Renamed `fts` fish abbreviation to `ftsw` for `forest tree switch`.
+
 ### Fixed
 
 - `tree prune` no longer silently removes worktrees whose branches were deleted from the remote without being merged. It now checks via `gh` whether the PR was actually merged, and prompts for confirmation when `gh` is unavailable or the PR was not merged.
+
 ## [0.1.1] - 2026-02-17
 ### Fixed
 
