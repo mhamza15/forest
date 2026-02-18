@@ -205,7 +205,7 @@ Forest ships as a [Fisher](https://github.com/jorgebucaran/fisher)-compatible fi
 | `fta` | `forest tree add` |
 | `ftl` | `forest tree list` |
 | `ftr` | `forest tree remove` |
-| `fts` | `forest tree switch` |
+| `ftsw` | `forest tree switch` |
 | `ftpr` | `forest tree prune` |
 | `ftp` | `forest tree --project` |
 | `ftap` | `forest tree add --project` |

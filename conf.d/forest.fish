@@ -14,7 +14,7 @@ abbr --add ft   "forest tree"
 abbr --add fta  "forest tree add"
 abbr --add ftl  "forest tree list"
 abbr --add ftr  "forest tree remove"
-abbr --add fts  "forest tree switch"
+abbr --add ftsw "forest tree switch"
 abbr --add ftpr "forest tree prune"
 
 # tree with --project override.
