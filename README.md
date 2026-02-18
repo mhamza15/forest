@@ -206,13 +206,13 @@ Forest ships as a [Fisher](https://github.com/jorgebucaran/fisher)-compatible fi
 | `ft` | `forest tree` |
 | `fta` | `forest tree add` |
 | `ftl` | `forest tree list` |
-| `ftr` | `forest tree remove` |
+| `ftrm` | `forest tree remove` |
 | `ftsw` | `forest tree switch` |
 | `ftpr` | `forest tree prune` |
 | `ftp` | `forest tree --project` |
 | `ftap` | `forest tree add --project` |
 | `ftlp` | `forest tree list --project` |
-| `ftrp` | `forest tree remove --project` |
+| `ftrmp` | `forest tree remove --project` |
 | `ftsp` | `forest tree switch --project` |
 | `ftprp` | `forest tree prune --project` |
 | `fp` | `forest project` |

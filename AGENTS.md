@@ -75,7 +75,7 @@ gotestsum -- -run TestSessionName ./internal/tmux/
 
 ## Changelog
 
-Update `CHANGELOG.md` with every user-facing change. Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. Group entries under `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, or `Security`. Write entries from the user's perspective, not the implementation's.
+Update `CHANGELOG.md` with every user-facing change, following https://keepachangelog.com/en/1.1.0/. Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. Group entries under `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, or `Security`. Write entries from the user's perspective, not the implementation's.
 
 ## Code Conventions & Common Patterns
 

@@ -13,7 +13,7 @@ abbr --add f forest
 abbr --add ft   "forest tree"
 abbr --add fta  "forest tree add"
 abbr --add ftl  "forest tree list"
-abbr --add ftr  "forest tree remove"
+abbr --add ftrm "forest tree remove"
 abbr --add ftsw "forest tree switch"
 abbr --add ftpr "forest tree prune"
 
@@ -21,7 +21,7 @@ abbr --add ftpr "forest tree prune"
 abbr --add ftp   "forest tree --project"
 abbr --add ftap  "forest tree add --project"
 abbr --add ftlp  "forest tree list --project"
-abbr --add ftrp  "forest tree remove --project"
+abbr --add ftrmp "forest tree remove --project"
 abbr --add ftsp  "forest tree switch --project"
 abbr --add ftprp "forest tree prune --project"
 
