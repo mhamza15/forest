@@ -1,7 +1,7 @@
 // Package tui implements the inline tree browser for forest.
 package tui
 
-import "github.com/charmbracelet/bubbles/key"
+import "charm.land/bubbles/v2/key"
 
 // keyMap defines all keybindings for the tree browser.
 type keyMap struct {

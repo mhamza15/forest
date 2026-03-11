@@ -1,7 +1,7 @@
 package tree
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/mhamza15/forest/internal/tui"
 )

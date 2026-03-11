@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/huh"
+	"charm.land/bubbles/v2/key"
+	"charm.land/huh/v2"
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/config"

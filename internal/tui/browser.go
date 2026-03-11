@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/spinner"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/forest"
@@ -107,7 +107,7 @@ func NewModel(project string) (Model, error) {
 	ti := textinput.New()
 	ti.Placeholder = "branch name"
 	ti.CharLimit = 128
-	ti.Width = 40
+	ti.SetWidth(40)
 
 	s := spinner.New(
 		spinner.WithSpinner(spinner.Dot),
@@ -132,7 +132,7 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.help.Width = msg.Width
+		m.help.SetWidth(msg.Width)
 		return m, nil
 
 	case deleteResultMsg:
@@ -145,7 +145,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		if m.mode == modeDeleting {
 			return m, nil
 		}
@@ -162,7 +162,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	// In branch input mode, handle text input first.
 	if m.mode == modeNewInputBranch {
 		return m.handleNewBranchInput(msg)
@@ -213,9 +213,9 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 // View renders the inline tree browser.
-func (m Model) View() string {
+func (m Model) View() tea.View {
 	if len(m.projects) == 0 {
-		return styleDim.Render("No projects registered. Use 'forest project add' to add one.") + "\n"
+		return tea.NewView(styleDim.Render("No projects registered. Use 'forest project add' to add one.") + "\n")
 	}
 
 	var b strings.Builder
@@ -289,7 +289,7 @@ func (m Model) View() string {
 		b.WriteString("\n" + m.help.View(m.keys) + "\n")
 	}
 
-	return b.String()
+	return tea.NewView(b.String())
 }
 
 // visibleRows returns the total number of visible rows.
@@ -408,7 +408,7 @@ func (m Model) startDelete() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handleConfirmDelete(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleConfirmDelete(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case key.Matches(msg, m.keys.Confirm):
 		return m.executeDelete()
@@ -419,7 +419,7 @@ func (m Model) handleConfirmDelete(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m Model) handleConfirmForce(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleConfirmForce(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case key.Matches(msg, m.keys.Confirm):
 		return m.executeForceDelete()
@@ -532,7 +532,7 @@ func (m Model) startNew() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handleNewSelectProject(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleNewSelectProject(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case key.Matches(msg, m.keys.Quit), key.Matches(msg, m.keys.Cancel):
 		m.mode = modeBrowse
@@ -561,9 +561,9 @@ func (m Model) handleNewSelectProject(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handleNewBranchInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch msg.Type {
-	case tea.KeyEsc:
+func (m Model) handleNewBranchInput(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	switch msg.Code {
+	case tea.KeyEscape:
 		m.mode = modeBrowse
 		m.input.Blur()
 		return m, nil
