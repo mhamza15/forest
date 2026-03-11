@@ -170,23 +170,48 @@ func resolveLinkBranch(link github.Link, repoPath string) (string, error) {
 			slog.String("clone_url", head.CloneURL),
 		)
 
-		// The branch may not exist locally. Fetch it from the head
-		// repository's clone URL, which is the fork URL for cross-repo
-		// PRs and the base repo URL for same-repo PRs. We always use
-		// the clone URL rather than "origin" because the user's origin
-		// remote may point to their own fork, not the PR's repository.
-		// Skip the fetch if the branch already exists -- it may already
-		// be checked out in a worktree, and git refuses to fetch into a
-		// checked-out branch.
-		if !git.BranchExists(repoPath, head.Branch) {
-			fmt.Printf("Fetching branch %q from %s\n", head.Branch, head.CloneURL)
+		// For fork PRs, prefix the local branch with the fork owner
+		// so it does not collide with identically named branches in
+		// the base repository.
+		localBranch := head.Branch
+		if head.IsFork {
+			localBranch = head.ForkOwner + "/" + head.Branch
+		}
 
-			if err := git.Fetch(repoPath, head.CloneURL, head.Branch, head.Branch); err != nil {
-				return "", fmt.Errorf("fetching branch: %w", err)
+		// The branch may not exist locally. Fetch it from the head
+		// repository. Skip the fetch if the branch already exists; it
+		// may already be checked out in a worktree, and git refuses to
+		// fetch into a checked-out branch.
+		//
+		// For fork PRs, add the fork as a named remote and fetch from
+		// it so that upstream tracking points to the fork's branch name
+		// (e.g. fix-bug on remote "contributor"), not the prefixed
+		// local name (contributor/fix-bug).
+		if !git.BranchExists(repoPath, localBranch) {
+			if head.IsFork {
+				if err := git.EnsureRemote(repoPath, head.ForkOwner, head.CloneURL); err != nil {
+					return "", fmt.Errorf("adding fork remote: %w", err)
+				}
+
+				fmt.Printf("Fetching branch %q from %s\n", head.Branch, head.ForkOwner)
+
+				if err := git.FetchBranch(repoPath, head.ForkOwner, head.Branch); err != nil {
+					return "", fmt.Errorf("fetching branch: %w", err)
+				}
+
+				if err := git.CreateTrackingBranch(repoPath, localBranch, head.ForkOwner+"/"+head.Branch); err != nil {
+					return "", fmt.Errorf("creating tracking branch: %w", err)
+				}
+			} else {
+				fmt.Printf("Fetching branch %q from %s\n", localBranch, head.CloneURL)
+
+				if err := git.Fetch(repoPath, head.CloneURL, head.Branch, localBranch); err != nil {
+					return "", fmt.Errorf("fetching branch: %w", err)
+				}
 			}
 		}
 
-		return head.Branch, nil
+		return localBranch, nil
 
 	default:
 		return "", fmt.Errorf("unexpected link kind: %d", link.Kind)

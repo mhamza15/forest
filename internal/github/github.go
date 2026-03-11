@@ -157,6 +157,10 @@ type PRHead struct {
 
 	// IsFork is true when the head repo differs from the base repo.
 	IsFork bool
+
+	// ForkOwner is the login of the fork's owner. It is set only
+	// when IsFork is true.
+	ForkOwner string
 }
 
 // ghPRJSON is the subset of gh pr view --json output that we need.
@@ -204,11 +208,17 @@ func FetchPRHead(nwo string, number int) (PRHead, error) {
 		pr.HeadRepo.Name,
 	)
 
-	return PRHead{
+	head := PRHead{
 		Branch:   pr.HeadRefName,
 		CloneURL: cloneURL,
 		IsFork:   pr.IsCrossRepository,
-	}, nil
+	}
+
+	if pr.IsCrossRepository {
+		head.ForkOwner = pr.HeadRepoOwner.Login
+	}
+
+	return head, nil
 }
 
 // IsPRMerged checks whether a merged pull request exists for the

@@ -84,6 +84,53 @@ func Fetch(repoPath, remoteURL, remoteBranch, localBranch string) error {
 	return nil
 }
 
+// EnsureRemote adds a named remote if it does not already exist.
+// If the remote name is already configured, the error is silently
+// ignored so callers can safely call this unconditionally.
+func EnsureRemote(repoPath, name, url string) error {
+	cmd := exec.Command("git", "-C", repoPath, "remote", "add", name, url)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		// Ignore "already exists" errors.
+		if bytes.Contains(output, []byte("already exists")) {
+			return nil
+		}
+
+		return fmt.Errorf("git remote add: %s: %w", bytes.TrimSpace(output), err)
+	}
+
+	return nil
+}
+
+// FetchBranch fetches a single branch from a named remote, updating
+// the corresponding remote tracking ref (e.g. refs/remotes/<remote>/<branch>).
+func FetchBranch(repoPath, remote, branch string) error {
+	cmd := exec.Command("git", "-C", repoPath, "fetch", remote, branch)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git fetch: %s: %w", bytes.TrimSpace(output), err)
+	}
+
+	return nil
+}
+
+// CreateTrackingBranch creates a local branch that tracks the given
+// remote tracking ref. For example, CreateTrackingBranch(repo,
+// "contributor/fix-bug", "contributor/fix-bug") creates local branch
+// contributor/fix-bug tracking remote "contributor", branch "fix-bug".
+func CreateTrackingBranch(repoPath, branch, upstream string) error {
+	cmd := exec.Command("git", "-C", repoPath, "branch", "--track", branch, upstream)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git branch --track: %s: %w", bytes.TrimSpace(output), err)
+	}
+
+	return nil
+}
+
 // FetchRemoteBranch attempts to fetch a single branch from the
 // repository's configured remotes. It tries each remote in order and
 // returns the name of the first remote that provides the branch.

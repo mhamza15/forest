@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Fork PR worktrees now set upstream tracking to the fork's branch name (e.g. `fix-bug` on remote `contributor`) instead of the prefixed local name (`contributor/fix-bug`).
+
 ### Changed
 
 - Renamed `ftr` fish abbreviation to `ftrm` for `forest tree remove`.
