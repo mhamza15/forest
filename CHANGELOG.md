@@ -10,9 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Fork PR worktrees now set upstream tracking to the fork's branch name (e.g. `fix-bug` on remote `contributor`) instead of the prefixed local name (`contributor/fix-bug`).
 - Reopening an existing fork PR by URL now repairs older prefixed local branches so they track the fork's branch again.
+- Fork-prefixed worktrees now store `push.default=upstream` in worktree-local Git config, so plain `git push` updates the fork branch even when the local branch name is prefixed.
 
 ### Changed
 
+- `tree switch` now creates a missing worktree before opening its tmux session, and `tree add` has been folded into `tree switch`.
 - Upgraded bubbletea, bubbles, lipgloss, and huh to v2 (`charm.land/*` import paths).
 - Renamed `ftr` fish abbreviation to `ftrm` for `forest tree remove`.
 

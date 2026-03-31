@@ -24,13 +24,13 @@ First, register a git repository as a project:
 forest project add ~/dev/myapp
 ```
 
-Next, create a worktree and tmux session for a branch:
+Next, switch to a worktree and tmux session for a branch:
 
 ```
-forest tree add myapp feature/login
+forest tree switch --project myapp feature/login
 ```
 
-This creates a worktree at `<worktree_dir>/myapp/feature-login` (`worktree_dir` defaults to `~/.local/share/forest/worktrees`), starts a tmux session named `myapp-feature-login`, and switches to it.
+This creates a worktree at `<worktree_dir>/myapp/feature-login` (`worktree_dir` defaults to `~/.local/share/forest/worktrees`) when needed, starts a tmux session named `myapp-feature-login`, and switches to it. If the worktree already exists, it reuses the existing worktree and just switches to its tmux session.
 
 If the branch does not exist locally but exists on a remote, it is fetched automatically and the local branch is set up to track the remote.
 
@@ -85,7 +85,7 @@ Available Commands:
 ### Worktrees
 
 ```
-Create, remove, and browse worktrees. Run without a subcommand
+Create, switch to, remove, and browse worktrees. Run without a subcommand
 to open the interactive tree browser.
 
 Usage:
@@ -93,11 +93,10 @@ Usage:
   forest tree [command]
 
 Available Commands:
-  add         Create a new worktree and tmux session
   list        List worktrees for one or all projects
-  prune       Remove worktrees for branches merged into the base branch
+  prune       Remove worktrees whose branches have been merged or deleted
   remove      Remove a worktree and its tmux session
-  switch      Switch to an existing worktree's tmux session
+  switch      Switch to a worktree, creating it if needed
 ```
 
 The interactive tree browser (`forest tree`) supports vim keybindings (`j`/`k`, `ctrl+n`/`ctrl+p`, arrows), `enter`/`l` to open, `tab` to expand/collapse, `d` to delete, `n` to create a new tree, `?` to toggle help, and `q` to quit.
@@ -204,13 +203,11 @@ Forest ships as a [Fisher](https://github.com/jorgebucaran/fisher)-compatible fi
 |---|---|
 | `f` | `forest` |
 | `ft` | `forest tree` |
-| `fta` | `forest tree add` |
 | `ftl` | `forest tree list` |
 | `ftrm` | `forest tree remove` |
 | `ftsw` | `forest tree switch` |
 | `ftpr` | `forest tree prune` |
 | `ftp` | `forest tree --project` |
-| `ftap` | `forest tree add --project` |
 | `ftlp` | `forest tree list --project` |
 | `ftrmp` | `forest tree remove --project` |
 | `ftsp` | `forest tree switch --project` |

@@ -11,7 +11,6 @@ abbr --add f forest
 
 # tree: worktree lifecycle and browser.
 abbr --add ft   "forest tree"
-abbr --add fta  "forest tree add"
 abbr --add ftl  "forest tree list"
 abbr --add ftrm "forest tree remove"
 abbr --add ftsw "forest tree switch"
@@ -19,7 +18,6 @@ abbr --add ftpr "forest tree prune"
 
 # tree with --project override.
 abbr --add ftp   "forest tree --project"
-abbr --add ftap  "forest tree add --project"
 abbr --add ftlp  "forest tree list --project"
 abbr --add ftrmp "forest tree remove --project"
 abbr --add ftsp  "forest tree switch --project"

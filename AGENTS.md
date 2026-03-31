@@ -30,7 +30,7 @@ main.go → cmd.Execute()
 
 ### Data flow for worktree creation
 
-1. User invokes `forest tree add <branch>` (or a GitHub link, or `--project` override)
+1. User invokes `forest tree switch <branch>` (or a GitHub link, or `--project` override)
 2. `config.Resolve(project)` loads global + project YAML configs, merges into `ResolvedConfig`
 3. `forest.AddTree(rc, branch)` checks for existing worktree via `git.FindByBranch`, creates via `git.Add`, copies files via `git.CopyFiles`, symlinks files via `git.SymlinkFiles`
 4. `forest.OpenSession(rc, branch, path)` creates tmux session via `tmux.NewSession`, applies layout via `tmux.ApplyLayout`

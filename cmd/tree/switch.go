@@ -2,97 +2,87 @@ package tree
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/spf13/cobra"
 
 	"github.com/mhamza15/forest/internal/completion"
-	"github.com/mhamza15/forest/internal/config"
 	"github.com/mhamza15/forest/internal/forest"
-	"github.com/mhamza15/forest/internal/git"
-	"github.com/mhamza15/forest/internal/github"
 	"github.com/mhamza15/forest/internal/tmux"
 )
 
-func switchCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:   "switch {<branch> | <github-link>}",
-		Short: "Switch to an existing worktree's tmux session",
-		Long: `Switch to the tmux session for an existing worktree. If the
-worktree exists but the session does not, the session is created
-with the configured layout. Does not create new worktrees.
+var baseBranchFlag string
 
-A GitHub issue or pull request URL may be passed instead of a branch
-name. The project is resolved from the URL and the branch is derived
-from the link (issue-<number> for issues, the PR head branch for PRs).`,
+func switchCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "switch {<branch> | <github-link>}",
+		Short: "Switch to a worktree, creating it if needed",
+		Long: "Switch to the tmux session for a worktree.\n" +
+			"\n" +
+			"If the worktree does not already exist, it is created first. If the\n" +
+			"tmux session does not already exist, the session is created with the\n" +
+			"configured layout.\n" +
+			"\n" +
+			"The project is resolved from the --project flag when set, or inferred\n" +
+			"from the current working directory by matching its git remote against\n" +
+			"registered projects.\n" +
+			"\n" +
+			"If the branch does not exist locally but exists on a remote, it is\n" +
+			"fetched and the local branch is created with upstream tracking\n" +
+			"configured. Otherwise, a new branch is created based on the project's\n" +
+			"configured base branch, falling back to the global default. Use\n" +
+			"--branch to override the base branch for new worktrees.\n" +
+			"\n" +
+			"A GitHub issue or pull request URL may be passed instead of a branch:\n" +
+			"\n" +
+			"  forest tree switch https://github.com/owner/repo/issues/42\n" +
+			"  forest tree switch https://github.com/owner/repo/pull/99\n" +
+			"\n" +
+			"For issues, a branch named \"issue-<number>\" is used (e.g. \"issue-42\").\n" +
+			"For pull requests, the PR's head branch is used. If the PR comes from\n" +
+			"a fork, the branch is fetched from the fork's remote.",
 		Args:              cobra.ExactArgs(1),
 		RunE:              runSwitch,
 		ValidArgsFunction: completion.Branches,
 	}
+
+	cmd.Flags().StringVarP(&baseBranchFlag, "branch", "b", "", "base branch for a new worktree (overrides project config)")
+
+	return cmd
 }
 
 func runSwitch(cmd *cobra.Command, args []string) error {
-	projectFlag, _ := cmd.Flags().GetString("project")
-
-	var (
-		project string
-		branch  string
-		rc      config.ResolvedConfig
-	)
-
-	if github.IsGitHubURL(args[0]) {
-		link, err := github.ParseLink(args[0])
-		if err != nil {
-			return err
-		}
-
-		name, resolved, err := config.FindProjectByRemote(link.NWO())
-		if err != nil {
-			return err
-		}
-
-		project = name
-		rc = resolved
-
-		branch, err = resolveLinkBranch(link, rc.Repo)
-		if err != nil {
-			return err
-		}
-	} else {
-		branch = args[0]
-
-		var err error
-
-		project, err = resolveProject(projectFlag)
-		if err != nil {
-			return err
-		}
-
-		resolved, err := config.Resolve(project)
-		if err != nil {
-			return err
-		}
-
-		rc = resolved
-	}
-
-	existing := git.FindByBranch(rc.Repo, branch)
-	if existing == nil {
-		return fmt.Errorf("no worktree for branch %q in project %q", branch, project)
-	}
-
-	if err := forest.OpenSession(rc, branch, existing.Path); err != nil {
+	project, branch, rc, err := resolveTreeTarget(cmd, args[0])
+	if err != nil {
 		return err
 	}
 
-	return tmux.SwitchTo(tmux.SessionName(rc.Name, branch))
-}
-
-// resolveProject determines the project name from the flag value,
-// falling back to inference from the working directory.
-func resolveProject(flagValue string) (string, error) {
-	if flagValue != "" {
-		return flagValue, nil
+	result, err := forest.AddTree(rc, branch)
+	if err != nil {
+		return err
 	}
 
-	return config.InferProject()
+	if result.Created {
+		if result.Fetched {
+			fmt.Printf("Fetched branch %q from %s\n", branch, result.Remote)
+		}
+
+		fmt.Printf("Created worktree %s/%s\n", project, branch)
+	}
+
+	for _, w := range result.CopyWarnings {
+		fmt.Println(w)
+	}
+
+	for _, w := range result.SymlinkWarnings {
+		fmt.Println(w)
+	}
+
+	if err := forest.OpenSession(rc, branch, result.WorktreePath); err != nil {
+		return err
+	}
+
+	slog.Debug("switching to tmux session", slog.String("session", result.SessionName))
+
+	return tmux.SwitchTo(result.SessionName)
 }

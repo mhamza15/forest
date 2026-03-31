@@ -2,8 +2,10 @@ package git
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -168,6 +170,135 @@ func setBranchConfig(repoPath, branch, key, value string) error {
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("git config %s: %s: %w", name, bytes.TrimSpace(output), err)
+	}
+
+	return nil
+}
+
+// ConfigureWorktreePush adjusts push behavior for a specific worktree
+// when its local branch intentionally tracks a differently named
+// upstream branch.
+//
+// Git's default push mode is "simple", which requires the local and
+// upstream branch names to match. Fork PR worktrees deliberately use a
+// prefixed local branch name such as contributor/fix-bug while tracking
+// the fork's actual branch name fix-bug. In those worktrees, plain
+// "git push" should still update the upstream branch.
+//
+// To scope this behavior to only the affected worktree, this enables
+// Git's worktree-specific config and writes push.default=upstream to
+// that worktree's config.worktree file.
+func ConfigureWorktreePush(repoPath, worktreePath, branch string) error {
+	mergeRef, ok, err := branchConfigValue(repoPath, branch, "merge")
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		return nil
+	}
+
+	expectedRef := "refs/heads/" + branch
+	if mergeRef == expectedRef {
+		enabled, err := repoConfigEnabled(repoPath, "extensions.worktreeConfig")
+		if err != nil {
+			return err
+		}
+
+		if !enabled {
+			return nil
+		}
+
+		return unsetWorktreeConfig(worktreePath, "push.default")
+	}
+
+	if err := EnableWorktreeConfig(repoPath); err != nil {
+		return err
+	}
+
+	if err := setWorktreeConfig(worktreePath, "push.default", "upstream"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// EnableWorktreeConfig turns on Git's worktree-specific config support
+// for the repository. With this extension enabled, "git config
+// --worktree" writes to config.worktree for the current worktree
+// instead of the shared repository config.
+func EnableWorktreeConfig(repoPath string) error {
+	cmd := exec.Command("git", "-C", repoPath, "config", "extensions.worktreeConfig", "true")
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git config extensions.worktreeConfig: %s: %w", bytes.TrimSpace(output), err)
+	}
+
+	return nil
+}
+
+func repoConfigEnabled(repoPath, key string) (bool, error) {
+	cmd := exec.Command("git", "-C", repoPath, "config", "--get", "--bool", key)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
+			return false, nil
+		}
+
+		return false, fmt.Errorf("git config --get --bool %s: %s: %w", key, bytes.TrimSpace(output), err)
+	}
+
+	return strings.TrimSpace(string(output)) == "true", nil
+}
+
+func branchConfigValue(repoPath, branch, key string) (string, bool, error) {
+	name := fmt.Sprintf("branch.%s.%s", branch, key)
+
+	cmd := exec.Command("git", "-C", repoPath, "config", "--get", name)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
+			return "", false, nil
+		}
+
+		return "", false, fmt.Errorf("git config --get %s: %s: %w", name, bytes.TrimSpace(output), err)
+	}
+
+	return strings.TrimSpace(string(output)), true, nil
+}
+
+func setWorktreeConfig(worktreePath, key, value string) error {
+	cmd := exec.Command("git", "-C", worktreePath, "config", "--worktree", key, value)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git config --worktree %s: %s: %w", key, bytes.TrimSpace(output), err)
+	}
+
+	return nil
+}
+
+func unsetWorktreeConfig(worktreePath, key string) error {
+	cmd := exec.Command("git", "-C", worktreePath, "config", "--worktree", "--unset", key)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) && exitErr.ExitCode() == 5 {
+			return nil
+		}
+
+		return fmt.Errorf("git config --worktree --unset %s (%s): %s: %w",
+			key,
+			filepath.Base(worktreePath),
+			bytes.TrimSpace(output),
+			err,
+		)
 	}
 
 	return nil

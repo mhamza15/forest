@@ -9,16 +9,16 @@ func Command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "tree",
 		Short: "Manage and browse worktrees",
-		Long:  "Create, remove, and browse worktrees. Run without a subcommand to open the interactive tree browser.",
+		Long:  "Create, switch to, remove, and browse worktrees. Run without a subcommand to open the interactive tree browser.",
 		Args:  cobra.NoArgs,
 		RunE:  runBrowser,
 	}
 
-	cmd.AddCommand(addCmd())
 	cmd.AddCommand(listCmd())
 	cmd.AddCommand(pruneCmd())
 	cmd.AddCommand(removeCmd())
 	cmd.AddCommand(switchCmd())
+	cmd.AddCommand(addCmd())
 
 	return cmd
 }

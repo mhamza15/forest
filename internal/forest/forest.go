@@ -57,6 +57,11 @@ func AddTree(rc config.ResolvedConfig, branch string) (AddTreeResult, error) {
 	// convention).
 	if existing := git.FindByBranch(rc.Repo, branch); existing != nil {
 		result.WorktreePath = existing.Path
+
+		if err := git.ConfigureWorktreePush(rc.Repo, existing.Path, branch); err != nil {
+			return result, fmt.Errorf("configuring worktree push: %w", err)
+		}
+
 		return result, nil
 	}
 
@@ -96,6 +101,10 @@ func AddTree(rc config.ResolvedConfig, branch string) (AddTreeResult, error) {
 
 	if len(rc.Symlink) > 0 {
 		result.SymlinkWarnings = git.SymlinkFiles(rc.Repo, wtPath, rc.Symlink)
+	}
+
+	if err := git.ConfigureWorktreePush(rc.Repo, wtPath, branch); err != nil {
+		return result, fmt.Errorf("configuring worktree push: %w", err)
 	}
 
 	return result, nil
