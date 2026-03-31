@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - Fork PR worktrees now set upstream tracking to the fork's branch name (e.g. `fix-bug` on remote `contributor`) instead of the prefixed local name (`contributor/fix-bug`).
+- Reopening an existing fork PR by URL now repairs older prefixed local branches so they track the fork's branch again.
 
 ### Changed
 

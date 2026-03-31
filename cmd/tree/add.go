@@ -178,28 +178,30 @@ func resolveLinkBranch(link github.Link, repoPath string) (string, error) {
 			localBranch = head.ForkOwner + "/" + head.Branch
 		}
 
+		if head.IsFork {
+			if err := git.EnsureRemote(repoPath, head.ForkOwner, head.CloneURL); err != nil {
+				return "", fmt.Errorf("adding fork remote: %w", err)
+			}
+		}
+
 		// The branch may not exist locally. Fetch it from the head
-		// repository. Skip the fetch if the branch already exists; it
-		// may already be checked out in a worktree, and git refuses to
-		// fetch into a checked-out branch.
+		// repository. Skip the fetch when the local branch already
+		// exists. For same-repo PRs, the fetch writes directly to the
+		// local branch name. That fails when the branch is already
+		// checked out in another worktree.
 		//
-		// For fork PRs, add the fork as a named remote and fetch from
-		// it so that upstream tracking points to the fork's branch name
-		// (e.g. fix-bug on remote "contributor"), not the prefixed
-		// local name (contributor/fix-bug).
+		// For fork PRs, the local branch name is prefixed with the fork
+		// owner to avoid collisions. The upstream should still point to
+		// the fork's actual branch name, not the prefixed local branch.
 		if !git.BranchExists(repoPath, localBranch) {
 			if head.IsFork {
-				if err := git.EnsureRemote(repoPath, head.ForkOwner, head.CloneURL); err != nil {
-					return "", fmt.Errorf("adding fork remote: %w", err)
-				}
-
 				fmt.Printf("Fetching branch %q from %s\n", head.Branch, head.ForkOwner)
 
 				if err := git.FetchBranch(repoPath, head.ForkOwner, head.Branch); err != nil {
 					return "", fmt.Errorf("fetching branch: %w", err)
 				}
 
-				if err := git.CreateTrackingBranch(repoPath, localBranch, head.ForkOwner+"/"+head.Branch); err != nil {
+				if err := git.CreateTrackingBranch(repoPath, localBranch, head.ForkOwner, head.Branch); err != nil {
 					return "", fmt.Errorf("creating tracking branch: %w", err)
 				}
 			} else {
@@ -208,6 +210,13 @@ func resolveLinkBranch(link github.Link, repoPath string) (string, error) {
 				if err := git.Fetch(repoPath, head.CloneURL, head.Branch, localBranch); err != nil {
 					return "", fmt.Errorf("fetching branch: %w", err)
 				}
+			}
+		} else if head.IsFork {
+			// Older worktrees may have been created before fork PR
+			// upstreams were configured explicitly. Repair them when the
+			// user reopens the PR by URL.
+			if err := git.SetBranchUpstream(repoPath, localBranch, head.ForkOwner, head.Branch); err != nil {
+				return "", fmt.Errorf("setting branch upstream: %w", err)
 			}
 		}
 

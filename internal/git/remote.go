@@ -116,16 +116,58 @@ func FetchBranch(repoPath, remote, branch string) error {
 	return nil
 }
 
-// CreateTrackingBranch creates a local branch that tracks the given
-// remote tracking ref. For example, CreateTrackingBranch(repo,
-// "contributor/fix-bug", "contributor/fix-bug") creates local branch
-// contributor/fix-bug tracking remote "contributor", branch "fix-bug".
-func CreateTrackingBranch(repoPath, branch, upstream string) error {
-	cmd := exec.Command("git", "-C", repoPath, "branch", "--track", branch, upstream)
+// CreateTrackingBranch creates a local branch from the given remote
+// tracking ref and then configures its upstream explicitly.
+//
+// The local branch name and the remote tracking ref may both contain
+// slashes. For fork PRs they intentionally differ:
+//
+//	local branch:  contributor/fix-bug
+//	upstream ref:  refs/remotes/contributor/fix-bug
+//
+// Configuring the remote and merge keys explicitly avoids relying on
+// Git to infer the intended upstream from an ambiguous owner/branch
+// token.
+func CreateTrackingBranch(repoPath, branch, remote, remoteBranch string) error {
+	upstreamRef := fmt.Sprintf("refs/remotes/%s/%s", remote, remoteBranch)
+
+	cmd := exec.Command("git", "-C", repoPath, "branch", "--no-track", branch, upstreamRef)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("git branch --track: %s: %w", bytes.TrimSpace(output), err)
+		return fmt.Errorf("git branch: %s: %w", bytes.TrimSpace(output), err)
+	}
+
+	if err := SetBranchUpstream(repoPath, branch, remote, remoteBranch); err != nil {
+		return fmt.Errorf("setting branch upstream: %w", err)
+	}
+
+	return nil
+}
+
+// SetBranchUpstream configures the upstream branch for the given local
+// branch by writing the same remote and merge keys that Git uses for
+// tracked branches.
+func SetBranchUpstream(repoPath, branch, remote, remoteBranch string) error {
+	if err := setBranchConfig(repoPath, branch, "remote", remote); err != nil {
+		return err
+	}
+
+	if err := setBranchConfig(repoPath, branch, "merge", "refs/heads/"+remoteBranch); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func setBranchConfig(repoPath, branch, key, value string) error {
+	name := fmt.Sprintf("branch.%s.%s", branch, key)
+
+	cmd := exec.Command("git", "-C", repoPath, "config", name, value)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git config %s: %s: %w", name, bytes.TrimSpace(output), err)
 	}
 
 	return nil
