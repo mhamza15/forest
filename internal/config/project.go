@@ -32,6 +32,11 @@ type ProjectConfig struct {
 	// Unlike copy, symlinked files reference the original in the repo root directly.
 	Symlink []string `yaml:"symlink,omitempty"`
 
+	// Remove lists files relative to the repo root to remove from each new worktree.
+	// Tracked files are marked skip-worktree first so the deletion stays local
+	// to that worktree.
+	Remove []string `yaml:"remove,omitempty"`
+
 	// Layout overrides the global tmux window layout for this project.
 	Layout []Window `yaml:"layout,omitempty"`
 }
@@ -56,6 +61,9 @@ type ResolvedConfig struct {
 
 	// Symlink lists files to symlink from the repo root into each new worktree.
 	Symlink []string
+
+	// Remove lists files to remove from each new worktree.
+	Remove []string
 
 	// Layout defines the tmux windows to create for each new session.
 	Layout []Window
@@ -137,6 +145,7 @@ func Resolve(name string) (ResolvedConfig, error) {
 		Branch:      global.Branch,
 		Copy:        proj.Copy,
 		Symlink:     proj.Symlink,
+		Remove:      proj.Remove,
 		Layout:      layout,
 	}
 

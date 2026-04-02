@@ -33,6 +33,10 @@ type AddTreeResult struct {
 	// files into the new worktree.
 	SymlinkWarnings []string
 
+	// RemoveWarnings contains any warnings generated while removing
+	// configured files from the new worktree.
+	RemoveWarnings []string
+
 	// Fetched is true if the branch was fetched from a remote
 	// because it did not exist locally.
 	Fetched bool
@@ -101,6 +105,10 @@ func AddTree(rc config.ResolvedConfig, branch string) (AddTreeResult, error) {
 
 	if len(rc.Symlink) > 0 {
 		result.SymlinkWarnings = git.SymlinkFiles(rc.Repo, wtPath, rc.Symlink)
+	}
+
+	if len(rc.Remove) > 0 {
+		result.RemoveWarnings = git.RemoveFiles(wtPath, rc.Remove)
 	}
 
 	if err := git.ConfigureWorktreePush(rc.Repo, wtPath, branch); err != nil {

@@ -165,14 +165,15 @@ worktree_dir: /path/to/worktrees
 # use the global default.
 branch: main
 
-# Default directory that your projects live in. Used as starting
-# point in ` + "`" + `project add` + "`" + ` directory picker.
-projects_dir: ~/dev
-
 # Files to copy from the repo root into each new worktree.
 copy:
   - .env
   - config/local.yml
+
+# Files to remove from each new worktree. Tracked files are marked
+# skip-worktree first, so the deletion stays local to that worktree.
+remove:
+  - .envrc
 
 # Project-specific layout (overrides global layout).
 layout:
@@ -183,6 +184,15 @@ layout:
 
   - name: shell
     command: ""
+```
+
+`remove` is applied when Forest creates a worktree. To restore a removed tracked
+file in an existing worktree, clear the skip-worktree bit and then check the
+file out again:
+
+```sh
+git update-index --no-skip-worktree -- path/to/file
+git checkout -- path/to/file
 ```
 
 ## Shell completions

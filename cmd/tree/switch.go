@@ -78,6 +78,10 @@ func runSwitch(cmd *cobra.Command, args []string) error {
 		fmt.Println(w)
 	}
 
+	for _, w := range result.RemoveWarnings {
+		fmt.Println(w)
+	}
+
 	if err := forest.OpenSession(rc, branch, result.WorktreePath); err != nil {
 		return err
 	}

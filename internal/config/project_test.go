@@ -14,8 +14,11 @@ func TestSaveAndLoadProject(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", dir)
 
 	cfg := ProjectConfig{
-		Repo:   "/home/user/repos/myapp",
-		Branch: "develop",
+		Repo:    "/home/user/repos/myapp",
+		Branch:  "develop",
+		Copy:    []string{".env"},
+		Symlink: []string{"config/local.yml"},
+		Remove:  []string{"tracked.txt"},
 	}
 
 	require.NoError(t, SaveProject("myapp", cfg))
@@ -25,6 +28,9 @@ func TestSaveAndLoadProject(t *testing.T) {
 
 	assert.Equal(t, cfg.Repo, loaded.Repo)
 	assert.Equal(t, cfg.Branch, loaded.Branch)
+	assert.Equal(t, cfg.Copy, loaded.Copy)
+	assert.Equal(t, cfg.Symlink, loaded.Symlink)
+	assert.Equal(t, cfg.Remove, loaded.Remove)
 	assert.Empty(t, loaded.WorktreeDir)
 }
 
@@ -63,6 +69,9 @@ func TestResolve_ProjectOverrides(t *testing.T) {
 		Repo:        "/home/user/repos/myapp",
 		WorktreeDir: "/custom/trees",
 		Branch:      "develop",
+		Copy:        []string{".env"},
+		Symlink:     []string{"config/local.yml"},
+		Remove:      []string{"tracked.txt"},
 	}
 	require.NoError(t, SaveProject("myapp", cfg))
 
@@ -71,6 +80,9 @@ func TestResolve_ProjectOverrides(t *testing.T) {
 
 	assert.Equal(t, "/custom/trees", rc.WorktreeDir)
 	assert.Equal(t, "develop", rc.Branch)
+	assert.Equal(t, cfg.Copy, rc.Copy)
+	assert.Equal(t, cfg.Symlink, rc.Symlink)
+	assert.Equal(t, cfg.Remove, rc.Remove)
 }
 
 func TestRemoveProject(t *testing.T) {

@@ -31,6 +31,13 @@
             "type": "string"
          }
       },
+      "remove": {
+         "type": "array",
+         "description": "Files relative to the repo root to remove from each new worktree. Tracked files are marked skip-worktree first so the deletion stays local to that worktree.",
+         "items": {
+            "type": "string"
+         }
+      },
       "layout": {
          "type": "array",
          "description": "Tmux window layout for this project. Overrides the global layout entirely when set.",

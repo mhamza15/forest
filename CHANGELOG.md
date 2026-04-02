@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Project configs can now list tracked files under `remove` to hide them from newly created worktrees without recording their absence in commits. Forest marks those paths `skip-worktree` before deleting them locally.
+
 ### Fixed
 
 - Fork PR worktrees now set upstream tracking to the fork's branch name (e.g. `fix-bug` on remote `contributor`) instead of the prefixed local name (`contributor/fix-bug`).
