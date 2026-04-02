@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-04-02
+
 ### Added
 
 - Project configs can now list tracked files under `remove` to hide them from newly created worktrees without recording their absence in commits. Forest marks those paths `skip-worktree` before deleting them locally.
