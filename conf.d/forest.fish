@@ -21,6 +21,7 @@ abbr --add ftp   "forest tree --project"
 abbr --add ftlp  "forest tree list --project"
 abbr --add ftrmp "forest tree remove --project"
 abbr --add ftsp  "forest tree switch --project"
+abbr --add ftswp "forest tree switch --project"
 abbr --add ftprp "forest tree prune --project"
 
 # project: project registration.

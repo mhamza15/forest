@@ -18,7 +18,6 @@ func Command() *cobra.Command {
 	cmd.AddCommand(pruneCmd())
 	cmd.AddCommand(removeCmd())
 	cmd.AddCommand(switchCmd())
-	cmd.AddCommand(addCmd())
 
 	return cmd
 }

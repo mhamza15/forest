@@ -221,6 +221,7 @@ Forest ships as a [Fisher](https://github.com/jorgebucaran/fisher)-compatible fi
 | `ftlp` | `forest tree list --project` |
 | `ftrmp` | `forest tree remove --project` |
 | `ftsp` | `forest tree switch --project` |
+| `ftswp` | `forest tree switch --project` |
 | `ftprp` | `forest tree prune --project` |
 | `fp` | `forest project` |
 | `fpa` | `forest project add` |
