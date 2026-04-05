@@ -46,6 +46,60 @@ func TestAddTree_RemovesConfiguredFiles(t *testing.T) {
 	assert.Equal(t, "S .env", flags)
 }
 
+func TestAddTree_MovesBlockingPathAside(t *testing.T) {
+	repo := initTestRepo(t)
+
+	worktreeRoot := t.TempDir()
+	rc := config.ResolvedConfig{
+		Name:        "demo",
+		Repo:        repo,
+		WorktreeDir: worktreeRoot,
+		Branch:      "main",
+	}
+
+	blockingPath := filepath.Join(worktreeRoot, "demo", "feature")
+
+	require.NoError(t, os.MkdirAll(blockingPath, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(blockingPath, "sentinel.txt"), []byte("keep me"), 0o644))
+
+	result, err := AddTree(rc, "feature")
+	require.NoError(t, err)
+
+	require.True(t, result.Created)
+	require.Len(t, result.PathWarnings, 1)
+
+	assert.Equal(t, blockingPath, result.WorktreePath)
+
+	backupPath := blockingPath + ".forest-stale"
+
+	contents, readErr := os.ReadFile(filepath.Join(backupPath, "sentinel.txt"))
+	require.NoError(t, readErr)
+	assert.Equal(t, "keep me", string(contents))
+
+	assert.Equal(t, "feature", strings.TrimSpace(runGit(t, result.WorktreePath, "rev-parse", "--abbrev-ref", "HEAD")))
+}
+
+func TestAddTree_ErrorsWhenTargetPathBelongsToAnotherWorktree(t *testing.T) {
+	repo := initTestRepo(t)
+
+	worktreeRoot := t.TempDir()
+	rc := config.ResolvedConfig{
+		Name:        "demo",
+		Repo:        repo,
+		WorktreeDir: worktreeRoot,
+		Branch:      "main",
+	}
+
+	_, err := AddTree(rc, "feature/login")
+	require.NoError(t, err)
+
+	_, err = AddTree(rc, "feature-login")
+	require.Error(t, err)
+
+	require.ErrorContains(t, err, `worktree path "`)
+	require.ErrorContains(t, err, `branch "feature/login"`)
+}
+
 func initTestRepo(t *testing.T) string {
 	t.Helper()
 

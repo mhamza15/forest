@@ -146,6 +146,10 @@ func runAddFromGitHub(rawURL, name string) error {
 		return err
 	}
 
+	for _, w := range result.PathWarnings {
+		fmt.Println(w)
+	}
+
 	if err := forest.OpenSession(rc, branch, result.WorktreePath); err != nil {
 		return err
 	}

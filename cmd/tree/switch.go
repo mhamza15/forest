@@ -62,6 +62,10 @@ func runSwitch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	for _, w := range result.PathWarnings {
+		fmt.Println(w)
+	}
+
 	if result.Created {
 		if result.Fetched {
 			fmt.Printf("Fetched branch %q from %s\n", branch, result.Remote)

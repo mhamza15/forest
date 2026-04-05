@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -265,6 +266,37 @@ func FindByBranch(repoPath, branch string) *Worktree {
 	}
 
 	return nil
+}
+
+// FindByPath returns the worktree rooted at path, or nil if no
+// registered worktree matches it.
+func FindByPath(repoPath, path string) *Worktree {
+	trees, err := List(repoPath)
+	if err != nil {
+		return nil
+	}
+
+	for _, t := range trees {
+		if samePath(t.Path, path) {
+			return &t
+		}
+	}
+
+	return nil
+}
+
+func samePath(left, right string) bool {
+	if filepath.Clean(left) == filepath.Clean(right) {
+		return true
+	}
+
+	leftResolved, leftErr := filepath.EvalSymlinks(left)
+	rightResolved, rightErr := filepath.EvalSymlinks(right)
+	if leftErr != nil || rightErr != nil {
+		return false
+	}
+
+	return filepath.Clean(leftResolved) == filepath.Clean(rightResolved)
 }
 
 // parsePorcelain parses the porcelain output of git worktree list.

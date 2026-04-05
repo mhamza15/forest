@@ -3,7 +3,9 @@
 package forest
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -21,6 +23,10 @@ type AddTreeResult struct {
 
 	// WorktreePath is the filesystem path to the worktree.
 	WorktreePath string
+
+	// PathWarnings describes non-fatal filesystem recovery actions
+	// taken before creating the worktree.
+	PathWarnings []string
 
 	// SessionName is the tmux session name for this worktree.
 	SessionName string
@@ -86,6 +92,13 @@ func AddTree(rc config.ResolvedConfig, branch string) (AddTreeResult, error) {
 
 	wtPath := filepath.Join(rc.WorktreeDir, rc.Name, git.SafeBranchDir(branch))
 
+	pathWarnings, err := prepareWorktreePath(rc.Repo, wtPath)
+	if err != nil {
+		return result, err
+	}
+
+	result.PathWarnings = pathWarnings
+
 	slog.Debug("creating worktree", slog.String("path", wtPath), slog.String("base", rc.Branch))
 
 	if err := os.MkdirAll(filepath.Dir(wtPath), 0o755); err != nil {
@@ -116,6 +129,67 @@ func AddTree(rc config.ResolvedConfig, branch string) (AddTreeResult, error) {
 	}
 
 	return result, nil
+}
+
+func prepareWorktreePath(repoPath, worktreePath string) ([]string, error) {
+	if existing := git.FindByPath(repoPath, worktreePath); existing != nil {
+		return nil, fmt.Errorf("worktree path %q is already in use by %s", worktreePath, describeWorktree(existing))
+	}
+
+	if _, err := os.Lstat(worktreePath); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("statting worktree path %q: %w", worktreePath, err)
+	}
+
+	backupPath, err := moveAsideWorktreePath(worktreePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return []string{fmt.Sprintf("Moved existing path %s to %s", worktreePath, backupPath)}, nil
+}
+
+func describeWorktree(wt *git.Worktree) string {
+	if wt.Branch == "" {
+		return "a detached worktree"
+	}
+
+	return fmt.Sprintf("branch %q", wt.Branch)
+}
+
+func moveAsideWorktreePath(worktreePath string) (string, error) {
+	backupPath, err := nextRecoveredWorktreePath(worktreePath)
+	if err != nil {
+		return "", err
+	}
+
+	if err := os.Rename(worktreePath, backupPath); err != nil {
+		return "", fmt.Errorf("moving existing path %q aside to %q: %w", worktreePath, backupPath, err)
+	}
+
+	return backupPath, nil
+}
+
+func nextRecoveredWorktreePath(worktreePath string) (string, error) {
+	const suffix = ".forest-stale"
+
+	for i := 0; ; i++ {
+		candidate := worktreePath + suffix
+		if i > 0 {
+			candidate = fmt.Sprintf("%s%s-%d", worktreePath, suffix, i+1)
+		}
+
+		if _, err := os.Lstat(candidate); err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				return candidate, nil
+			}
+
+			return "", fmt.Errorf("statting recovery path %q: %w", candidate, err)
+		}
+	}
 }
 
 // OpenSession creates a tmux session for an existing worktree if one
