@@ -16,7 +16,7 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - run: go test ./...
+      - uses: robherley/go-test-action@ded24db7182143ded3264c543f5dc3dd1e5bb5fe # v1.0.1
 
   lint:
     runs-on: ubuntu-latest
